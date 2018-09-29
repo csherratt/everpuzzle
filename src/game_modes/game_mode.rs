@@ -16,6 +16,7 @@ pub struct GameMode {
     rng_seed: [u8; 16],
 }
 
+
 impl GameMode {
     pub fn new(some_seed: [u8; 16]) -> GameMode {
         GameMode {
