@@ -1,0 +1,8 @@
+[package]
+name = "amethyst_attack"
+version = "0.1.0"
+authors = ["Skytrias <skytrias91@gmail.com>"]
+
+[dependencies]
+amethyst = { git = "https://github.com/amethyst/amethyst", rev = "44c87a512cacbbfd774433bd6f6d935ed97b6c0d" }
+rand = "*"

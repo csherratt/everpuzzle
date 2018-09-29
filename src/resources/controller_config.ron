@@ -1,0 +1,7 @@
+(
+    axes: {},
+
+    actions: {
+        "space": [Key(Space)]
+    }
+)
