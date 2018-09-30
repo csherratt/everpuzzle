@@ -5,14 +5,12 @@ use amethyst::prelude::*;
 use amethyst::renderer::*;
 use amethyst::core::TransformBundle;
 use amethyst::input::InputBundle;
-use rand::prelude::*;
 
 mod data;
 mod basics;
 mod game_modes;
 mod systems;
 use systems::block_system::BlockSystem;
-use systems::playfield_system::PlayfieldSystem;
 use game_modes::game_mode::GameMode;
 
 fn main() -> amethyst::Result<()> {
@@ -49,9 +47,8 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(RenderBundle::new(pipe, Some(config)).with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
-        .with(PlayfieldSystem {is_down: false}, "playfield_system", &["input_system"])
-        .with(BlockSystem, "block_system", &[]);
-        
+        .with(BlockSystem::new(), "block_system", &["input_system"]);
+
     let assets_dir = format!("{}/src/sprites/", env!("CARGO_MANIFEST_DIR"));
     let mut game = Application::<GameData>::new(assets_dir, GameMode::new(SOME_SEED), game_data)?;
 

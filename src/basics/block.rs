@@ -4,13 +4,15 @@ use amethyst::ecs::prelude::{
 
 #[derive(Clone, Copy, Debug)]
 pub struct Block {
+    pub id: i32,
     pub kind: i32
 }
 
 impl Block {
-    pub fn new(new_kind: i32) -> Block {
+    pub fn new(id: i32, kind: i32) -> Block {
         Block {
-            kind: new_kind
+            id,
+            kind
         }
     }
 }
