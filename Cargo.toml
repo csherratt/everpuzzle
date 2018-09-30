@@ -5,4 +5,10 @@ authors = ["Skytrias <skytrias91@gmail.com>"]
 
 [dependencies]
 amethyst = { git = "https://github.com/amethyst/amethyst", rev = "44c87a512cacbbfd774433bd6f6d935ed97b6c0d" }
+amethyst_input = "0.4.0"
 rand = "*"
+
+[features]
+sdl_controller = [
+    "amethyst_input/sdl_controller",
+]

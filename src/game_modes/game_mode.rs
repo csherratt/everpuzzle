@@ -8,7 +8,7 @@ use amethyst::ecs::*;
 
 use basics::block::Block;
 use basics::spritesheet_loader::load_sprite_sheet;
-use basics::RNG::RNG;
+use basics::rng_resource::RngResource;
 use data::block_data::BLOCKS;
 use data::helpers::i2tuple;
 
@@ -66,16 +66,12 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
         }
 
         GameMode::create_blocks(world, block_kinds);
-        world.add_resource::<RNG>(RNG { gen: rng });
+        world.add_resource::<RngResource>(RngResource { rng });
 
         initialise_camera(world);
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: Event) -> Trans<GameData<'a, 'b>> {
-        if let event = ControllerButton {
-            ControllerButton::A => println!("DMAN");
-        };
-
         if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
             Trans::Quit
         } else {
