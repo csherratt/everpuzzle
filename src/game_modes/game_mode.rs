@@ -1,4 +1,4 @@
-use amethyst::input::{is_close_requested, is_key_down};
+use amethyst::input::*;
 use amethyst::prelude::*;
 use amethyst::renderer::*;
 use amethyst::core::cgmath::{Matrix4, Vector3};
@@ -72,6 +72,10 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: Event) -> Trans<GameData<'a, 'b>> {
+        if let event = ControllerButton {
+            ControllerButton::A => println!("DMAN");
+        };
+
         if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
             Trans::Quit
         } else {
