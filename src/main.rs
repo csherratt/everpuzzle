@@ -25,7 +25,11 @@ fn main() -> amethyst::Result<()> {
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([1.0, 1.0, 1.0, 1.0], 1.0)
-            .with_pass(DrawSprite::new()),
+            .with_pass(DrawSprite::new().with_transparency(
+                ColorMask::all(),
+                ALPHA,
+                Some(DepthMode::LessEqualWrite),
+            ))
     );
 
     const SOME_SEED: [u8; 16] = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
@@ -48,8 +52,11 @@ fn main() -> amethyst::Result<()> {
     let input_bundle = InputBundle::<String, String>::new().with_bindings_from_file(&binding_path)?;
 
     let game_data = GameDataBuilder::default()
-        .with_bundle(RenderBundle::new(pipe, Some(config)).with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
+        .with_bundle(RenderBundle::new(pipe,Some(config))
+            .with_sprite_sheet_processor()
+            .with_sprite_visibility_sorting(&["transform_system"])
+        )?
         .with_bundle(input_bundle)?
         .with(BlockSystem::new(), "block_system", &["input_system"]);
 

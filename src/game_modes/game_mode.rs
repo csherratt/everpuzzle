@@ -7,8 +7,10 @@ use amethyst::core::{Transform, GlobalTransform};
 use amethyst::ecs::*;
 
 use basics::block::Block;
+use basics::spritesheet_loader::load_blocks_sprite_sheet;
 use basics::spritesheet_loader::load_sprite_sheet;
 use basics::rng_resource::RngResource;
+use basics::cursor::Cursor;
 use data::block_data::BLOCKS;
 use data::helpers::i2tuple;
 
@@ -38,7 +40,7 @@ impl GameMode {
             trans.scale = scale_amount;
 
             let sprite_render_block = SpriteRender {
-                sprite_sheet: load_sprite_sheet(world),
+                sprite_sheet: load_blocks_sprite_sheet(world),
                 sprite_number: 0,
                 flip_horizontal: false,
                 flip_vertical: false,
@@ -67,6 +69,27 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
 
         GameMode::create_blocks(world, block_kinds);
         world.add_resource::<RngResource>(RngResource { rng });
+
+        let sprite_sheet = SpriteRender {
+            sprite_sheet: load_sprite_sheet(
+                world,
+                "cursor.png",
+                (576.0, 40.0),
+                (72.0, 40.0),
+                8,
+                [4.0, 4.0]),
+            sprite_number: 0,
+            flip_horizontal: false,
+            flip_vertical: false,
+        };
+        world.register::<Cursor>();
+        world.create_entity()
+            .with(sprite_sheet)
+            .with(Transparent::default())
+            .with(Cursor::new((0, 0)))
+            .with(GlobalTransform::default())
+            .with(Transform::default())
+            .build();
 
         initialise_camera(world);
     }
