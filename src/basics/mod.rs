@@ -1,3 +1,3 @@
 pub mod block;
 pub mod spritesheet_loader;
-pub mod RNG;
+pub mod rng_resource;

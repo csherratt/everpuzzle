@@ -1,0 +1,7 @@
+(
+    axes: {},
+
+    actions: {
+        "space": [Controller(0, A)]
+    }
+)

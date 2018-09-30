@@ -36,12 +36,16 @@ fn main() -> amethyst::Result<()> {
         *x = rand::random::<u8>();
     }
 
-    let binding_path = format!(
-        "{}/src/resources/controller_config.ron",
-        env!("CARGO_MANIFEST_DIR")
-    );
+    let binding_path = {
+        if cfg!(feature = "sdl_controller") {
+            format!("{}/src/resources/input_controller.ron", env!("CARGO_MANIFEST_DIR"))
+        }
+        else {
+            format!("{}/src/resources/input.ron", env!("CARGO_MANIFEST_DIR"))
+        }
+    };
 
-    let input_bundle = InputBundle::<String, String>::new().with_bindings_from_file(binding_path)?;
+    let input_bundle = InputBundle::<String, String>::new().with_bindings_from_file(&binding_path)?;
 
     let game_data = GameDataBuilder::default()
         .with_bundle(RenderBundle::new(pipe, Some(config)).with_sprite_sheet_processor())?
