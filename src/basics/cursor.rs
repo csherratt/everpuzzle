@@ -5,11 +5,15 @@ use amethyst::ecs::prelude::{
 #[derive(Clone, Copy, Debug)]
 pub struct Cursor {
     pub pos: (f32, f32),
+    pub anim_offset: f32
 }
 
 impl Cursor {
     pub fn new(pos: (f32, f32)) -> Cursor {
-        Cursor { pos }
+        Cursor {
+            pos,
+            anim_offset: 0.0
+        }
     }
 }
 
