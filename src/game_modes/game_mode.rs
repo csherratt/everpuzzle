@@ -25,7 +25,7 @@ impl GameMode {
         }
     }
 
-    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) {
+    pub fn create_blocks(world: &mut World, kinds: Vec<Option<i32>>) {
         world.register::<Block>();
 
         for i in 0..BLOCKS {
@@ -64,7 +64,14 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
 
         let mut block_kinds = Vec::new();
         for i in 0..BLOCKS {
-            block_kinds.push(rng.gen_range(0, 6));
+            let num = rng.gen_range(0, 7);
+
+            if num == 6 {
+               block_kinds.push(None);
+            }
+            else {
+                block_kinds.push(Some(num));
+            }
         }
 
         GameMode::create_blocks(world, block_kinds);
