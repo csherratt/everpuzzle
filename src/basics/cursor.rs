@@ -4,11 +4,11 @@ use amethyst::ecs::prelude::{
 
 #[derive(Clone, Copy, Debug)]
 pub struct Cursor {
-    pub pos: (i32, i32),
+    pub pos: (f32, f32),
 }
 
 impl Cursor {
-    pub fn new(pos: (i32, i32)) -> Cursor {
+    pub fn new(pos: (f32, f32)) -> Cursor {
         Cursor { pos }
     }
 }

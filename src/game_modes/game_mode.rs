@@ -86,7 +86,7 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
         world.create_entity()
             .with(sprite_sheet)
             .with(Transparent::default())
-            .with(Cursor::new((0, 0)))
+            .with(Cursor::new((0.0, 0.0)))
             .with(GlobalTransform::default())
             .with(Transform::default())
             .build();

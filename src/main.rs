@@ -11,6 +11,7 @@ mod basics;
 mod game_modes;
 mod systems;
 use systems::block_system::BlockSystem;
+use systems::cursor_system::CursorSystem;
 use game_modes::game_mode::GameMode;
 
 fn main() -> amethyst::Result<()> {
@@ -58,7 +59,8 @@ fn main() -> amethyst::Result<()> {
             .with_sprite_visibility_sorting(&["transform_system"])
         )?
         .with_bundle(input_bundle)?
-        .with(BlockSystem::new(), "block_system", &["input_system"]);
+        .with(BlockSystem::new(), "block_system", &["input_system"])
+        .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
     let assets_dir = format!("{}/src/sprites/", env!("CARGO_MANIFEST_DIR"));
     let mut game = Application::<GameData>::new(assets_dir, GameMode::new(SOME_SEED), game_data)?;
