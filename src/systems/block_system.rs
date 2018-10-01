@@ -27,16 +27,22 @@ impl<'a> System<'a> for BlockSystem {
     );
 
     fn run(&mut self, (mut sprites, mut blocks, input, mut generator): Self::SystemData) {
-      if input.action_is_down("space").unwrap() {
+        if input.action_is_down("space").unwrap() {
             if self.space_pressed == 0 {
                 for block in (&mut blocks).join() {
-                    block.kind = generator.rng.gen_range(0, 6);
+                    let num = generator.rng.gen_range(0, 7);
+
+                    if num == 6 {
+                        block.kind = None;
+                    }
+                    else {
+                        block.kind = Some(num);
+                    }
                 }
             }
 
             self.space_pressed += 1;
-        }
-        else {
+        } else {
             self.space_pressed = 0;
         }
 
@@ -49,7 +55,11 @@ impl<'a> System<'a> for BlockSystem {
         }
 
         for (sprite, block) in (&mut sprites, &mut blocks).join() {
-            sprite.sprite_number = block.kind as usize * 9;
+            if let Some(num) = block.kind {
+                sprite.sprite_number = num as usize * 9;
+            } else {
+                sprite.sprite_number = 8;
+            }
         }
     }
 }
