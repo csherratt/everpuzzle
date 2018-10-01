@@ -2,6 +2,10 @@
     axes: {},
 
     actions: {
+        "up": [Key(Up)],
+        "down": [Key(Down)],
+        "left": [Key(Left)],
+        "right": [Key(Right)],
         "space": [Key(Space)]
     }
 )
