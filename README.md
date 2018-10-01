@@ -1,5 +1,5 @@
 # Rust Attack
-**Tetris Attack/Pokémon Puzzle clone made in rust with amethyst**
+**Tetris Attack/Pokemon Puzzle esque game written in Rust with Ametyhst**
 
 ## Goal
 Build a clone similar to Tetris Attack and Pokémon Puzzle. This game needs to abide by the original rules of the game, so for example hit right frame times to feel exactly like the old games.
