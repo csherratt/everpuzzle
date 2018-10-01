@@ -84,8 +84,16 @@ impl<'a> System<'a> for CursorSystem {
             }
         }
 
-        for (transform, cursor) in (&mut transforms, &mut cursors).join() {
+        for (sprite, transform, cursor) in (&mut sprites, &mut transforms, &mut cursors).join() {
             transform.translation = Vector3::new(cursor.pos.0 * 32.0, cursor.pos.1 * 32.0, 0.0);
+            sprite.sprite_number = cursor.anim_offset as usize;
+
+            if cursor.anim_offset < 7.0 {
+                cursor.anim_offset += 1.0 / 2.0;
+            }
+            else {
+                cursor.anim_offset = 0.0;
+            }
         }
     }
 }
