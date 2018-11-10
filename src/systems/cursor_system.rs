@@ -28,18 +28,20 @@ impl CursorSystem {
 
     pub fn hold(&mut self, input: &mut Read<InputHandler<String, String>>, name: &str) -> bool {
         if input.action_is_down(name).unwrap() {
-            if *self.key_presses.get(name).unwrap() == 0 {
+            let result = *self.key_presses.get(name).unwrap();
+
+            if result == 0 || result > 5 {
                 *self.key_presses.get_mut(name).unwrap() += 1;
                 return true;
             }
 
             *self.key_presses.get_mut(name).unwrap() += 1;
-            return false;
         }
         else {
             *self.key_presses.get_mut(name).unwrap() = 0;
-            return false;
         }
+
+        return false;
     }
 }
 
@@ -85,7 +87,11 @@ impl<'a> System<'a> for CursorSystem {
         }
 
         for (sprite, transform, cursor) in (&mut sprites, &mut transforms, &mut cursors).join() {
-            transform.translation = Vector3::new(cursor.pos.0 * 32.0, cursor.pos.1 * 32.0, 0.0);
+            transform.translation = Vector3::new(
+                cursor.pos.0 * 32.0,
+                cursor.pos.1 * 32.0,
+                0.0
+            );
             sprite.sprite_number = cursor.anim_offset as usize;
 
             if cursor.anim_offset < 7.0 {
