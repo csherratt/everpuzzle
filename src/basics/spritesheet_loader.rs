@@ -14,7 +14,7 @@ pub fn load_blocks_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
         loader.load(
             "blocks_orig.png",
             PngFormat,
-            Default::default(),
+            TextureMetadata::srgb_scale(),
             (),
             &texture_storage,
         )
@@ -42,7 +42,7 @@ pub fn load_blocks_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
             all_sprites.push(Sprite {
                 width: 16.0,
                 height: 16.0,
-                offsets: [0.0, 0.0],
+                offsets: [-8.0, -8.0],
                 tex_coords: TextureCoordinates {
                     left: x as f32 * 16.0 / SPRITESHEET_SIZE.0,
                     right: (x as f32 + 1.0) * 16.0 / SPRITESHEET_SIZE.0,
@@ -78,7 +78,7 @@ pub fn load_sprite_sheet(world: &mut World, name: &str, size: (f32, f32), spr_si
         loader.load(
             name,
             PngFormat,
-            Default::default(),
+            TextureMetadata::srgb_scale(),
             (),
             &texture_storage,
         )

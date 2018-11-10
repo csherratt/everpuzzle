@@ -6,6 +6,7 @@
         "down": [Key(Down)],
         "left": [Key(Left)],
         "right": [Key(Right)],
-        "space": [Key(Space)]
+        "space": [Key(Space)],
+		"swap": [Key(S)]
     }
 )

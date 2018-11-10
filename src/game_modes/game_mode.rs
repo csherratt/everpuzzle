@@ -31,13 +31,7 @@ impl GameMode {
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
             let (x, y): (f32, f32) = i2tuple(i);
-            let scale_amount = Vector3::new(2.0, 2.0, 2.0);
-            trans.translation = Vector3::new(
-                (x * 16.0) * scale_amount.x,
-                (y * 16.0) * scale_amount.y,
-                0.0
-            );
-            trans.scale = scale_amount;
+            trans.scale = Vector3::new(2.0, 2.0, 2.0);
 
             let sprite_render_block = SpriteRender {
                 sprite_sheet: load_blocks_sprite_sheet(world),
@@ -48,7 +42,7 @@ impl GameMode {
 
             world.create_entity()
                 .with(sprite_render_block)
-                .with(Block::new(0, kinds[i]))
+                .with(Block::new(0, kinds[i], x, y))
                 .with(GlobalTransform::default())
                 .with(trans)
                 .build();
@@ -56,7 +50,7 @@ impl GameMode {
     }
 }
 
-impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
+impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
     fn on_start(&mut self, data: StateData<GameData>) {
         let world = data.world;
 
@@ -84,7 +78,7 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
                 (576.0, 40.0),
                 (72.0, 40.0),
                 8,
-                [4.0, 4.0]),
+                [-32.0, -16.0]),
             sprite_number: 0,
             flip_horizontal: false,
             flip_vertical: false,
@@ -100,22 +94,12 @@ impl<'a, 'b> State<GameData<'a, 'b>> for GameMode {
 
         initialise_camera(world);
     }
-
-    fn handle_event(&mut self, _data: StateData<GameData>, event: Event) -> Trans<GameData<'a, 'b>> {
-        if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
-            Trans::Quit
-        } else {
-            Trans::None
-        }
-    }
-
-    fn update(&mut self, data: StateData<GameData>) -> Trans<GameData<'a, 'b>> {
-        data.data.update(&data.world);
-        Trans::None
-    }
 }
 
 fn initialise_camera(world: &mut World) {
+    let mut transform = Transform::default();
+    transform.translation.z = 1.0;
+
     world.create_entity()
         .with(Camera::from(Projection::orthographic(
             0.0,
@@ -123,8 +107,6 @@ fn initialise_camera(world: &mut World) {
             500.0,
             0.0
         )))
-        .with(GlobalTransform(
-            Matrix4::from_translation(Vector3::new(0.0, 0.0, 1.0)).into()
-        ))
+        .with(transform)
         .build();
 }

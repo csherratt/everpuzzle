@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Skytrias <skytrias@protonmail.com>"]
 
 [dependencies]
-amethyst = { git = "https://github.com/amethyst/amethyst", rev = "44c87a512cacbbfd774433bd6f6d935ed97b6c0d" }
+amethyst = "0.9"
 amethyst_input = "0.4.0"
 rand = "*"
 
