@@ -1,3 +1,5 @@
+![alt text](https://github.com/Skytrias/everpuzzle/blob/master/preview1.PNG "preview")
+
 # Rust Attack
 **Tetris Attack/Pokemon Puzzle esque game written in Rust with Ametyhst**
 
@@ -29,4 +31,4 @@ If you are interested in helping out you can take a look at the [issues](https:/
 ## License
 Rust-Attack is free and open source software distributed under the terms of both the [MIT License](https://github.com/Skytrias/rust-attack/blob/master/LICENSE).
 
-The rights to the original sprite belong to Nintendo. In the future I'd like to use new art.
+The rights to the original Tetris Attack sprites belong to Nintendo. In the future I'd like to use new art.
