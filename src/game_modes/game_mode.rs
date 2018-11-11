@@ -12,7 +12,7 @@ use basics::{
     cursor::Cursor,
     spritesheet_loader::{
         load_blocks_sprite_sheet,
-        load_sprite_sheet
+        load_spritesheet
     },
     rng_resource::RngResource,
 };
@@ -86,13 +86,11 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
 
         // load the cursor sprite and attach its data component
         let sprite_sheet = SpriteRender {
-            sprite_sheet: load_sprite_sheet(
+            sprite_sheet: load_spritesheet(
                 world,
                 "cursor.png",
-                (576.0, 40.0),
-                (72.0, 40.0),
-                8,
-                [-32.0, -16.0]),
+                "cursor_spritesheet.ron"
+            ),
             sprite_number: 0,
             flip_horizontal: false,
             flip_vertical: false,

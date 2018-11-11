@@ -1,8 +1,6 @@
 use amethyst::prelude::*;
 use amethyst::renderer::*;
-use amethyst::assets::{
-    Loader, AssetStorage
-};
+use amethyst::assets::*;
 
 pub fn load_blocks_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     // Load the sprite sheet necessary to render the graphics.
@@ -68,62 +66,34 @@ pub fn load_blocks_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     sprite_sheet_handle
 }
 
-pub fn load_sprite_sheet(world: &mut World, name: &str, size: (f32, f32), spr_size: (f32, f32), H_FRAMES: usize, offsets: [f32; 2]) -> SpriteSheetHandle {
-    // Load the sprite sheet necessary to render the graphics.
-    // The texture is the pixel data
-    // `texture_handle` is a cloneable reference to the texture
-    let texture_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+pub fn load_spritesheet(world: &mut World, name: &str, filename: &str) -> SpriteSheetHandle {
+    let loader = world.read_resource::<Loader>();
+
+    // link texture with spritesheet
+    // TODO: Texture id should be unique
+    let texture_id = 1;
+    let mut material_texture_set = world
+        .write_resource::<MaterialTextureSet>()
+        .insert(texture_id, {
+            loader.load(
+                name,
+                PngFormat,
+                TextureMetadata::srgb_scale(),
+                (),
+                &world.read_resource::<AssetStorage<Texture>>()
+            )   
+        });
+    
+    // spritesheet_handle return
+    let sprite_sheethandle = {
         loader.load(
-            name,
-            PngFormat,
-            TextureMetadata::srgb_scale(),
+            filename,
+            SpriteSheetFormat,
+            texture_id,
             (),
-            &texture_storage,
+            &world.read_resource::<AssetStorage<SpriteSheet>>(),
         )
     };
 
-    // `texture_id` is a application defined ID given to the texture to store in the `World`.
-    // This is needed to link the texture to the sprite_sheet.
-    let texture_id = 1;
-    let mut material_texture_set = world.write_resource::<MaterialTextureSet>();
-    material_texture_set.insert(texture_id, texture_handle);
-
-    // Create the sprite for the paddles.
-    //
-    // Texture coordinates are expressed as a proportion of the sprite sheet's dimensions between
-    // 0.0 and 1.0, so they must be divided by the width or height.
-    //
-    // In addition, on the Y axis, texture coordinates are 0.0 at the bottom of the sprite sheet and
-    // 1.0 at the top, which is the opposite direction of pixel coordinates, so we have to invert
-    // the value by subtracting the pixel proportion from 1.0.
-    let mut all_sprites: Vec<Sprite> = Vec::new();
-    for x in 0..H_FRAMES {
-        all_sprites.push(Sprite {
-            width: spr_size.0,
-            height: spr_size.1,
-            offsets,
-            tex_coords: TextureCoordinates {
-                left: x as f32 * spr_size.0 / size.0,
-                right: (x as f32 + 1.0) * spr_size.0 / size.0,
-                bottom: 0.0,
-                top: 1.0,
-            }
-        })
-    }
-
-    // Collate the sprite layout information into a sprite sheet
-    let sprite_sheet = SpriteSheet {
-        texture_id,
-        sprites: all_sprites,
-    };
-
-    let sprite_sheet_handle = {
-        let loader = world.read_resource::<Loader>();
-        let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-        loader.load_from_data(sprite_sheet, (), &sprite_sheet_store)
-    };
-
-    sprite_sheet_handle
+    sprite_sheethandle
 }
