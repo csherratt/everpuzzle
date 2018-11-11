@@ -13,4 +13,8 @@ pub mod helpers {
 
         (x, y.floor())
     }
+
+    pub fn tuple2i(tuple: (f32, f32)) -> usize {
+        tuple.1 as usize * COLS + tuple.0 as usize
+    }
 }
