@@ -1,6 +1,6 @@
 (
 	title: "Amethyst Attack",
-	dimensions: Some((192, 384)),
+	dimensions: Some((384, 768)),
 	max_dimensions: None,
 	min_dimensions: None,
 	fullscreen: false,

@@ -1,6 +1,5 @@
-use amethyst::{
-    ecs::prelude::{Component, DenseVecStorage},
-    core::Transform,
+use amethyst::ecs::prelude::{
+    Component, DenseVecStorage
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -17,9 +16,9 @@ impl Cursor {
         }
     }
 
-    pub fn set_position(&mut self, transform: &mut Transform) {
-        transform.translation.x = self.pos.0 * 32.0 * transform.scale.x;
-        transform.translation.y = self.pos.1 * 32.0 * transform.scale.y;
+    pub fn set_position(transform: Transform) {
+        transform.translation.x = pos.0 * 32.0 * transform.scale.x;
+        transform.translation.y = pos.1 * 32.0 * transform.scale.y;
     }
 }
 

@@ -37,8 +37,11 @@ impl GameMode {
 
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
-            let (x, y): (f32, f32) = i2tuple(i);
-            trans.scale = Vector3::new(2.0, 2.0, 2.0);
+            trans.scale = Vector3::new(4.0, 4.0, 4.0);
+
+            // set position instantly so no weird spawn flash happens
+            let mut b = Block::new(kinds[i], i2tuple(i));
+            b.set_position(&mut trans);
 
             let sprite_render_block = SpriteRender {
                 sprite_sheet: load_blocks_sprite_sheet(world),
@@ -49,7 +52,7 @@ impl GameMode {
 
             world.create_entity()
                 .with(sprite_render_block)
-                .with(Block::new(i as i32, kinds[i], x, y))
+                .with(b)
                 .with(GlobalTransform::default())
                 .with(trans)
                 .build();
@@ -94,13 +97,20 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             flip_horizontal: false,
             flip_vertical: false,
         };
+
+        let mut trans = Transform::default();
+        trans.scale = Vector3::new(2.0, 2.0, 2.0);
+
+        let mut cursor = Cursor::new((2.0, 5.0));
+        cursor.set_position(&mut trans);
+
         world.register::<Cursor>();
         world.create_entity()
             .with(sprite_sheet)
             .with(Transparent::default())
-            .with(Cursor::new((0.0, 0.0)))
+            .with(cursor)
             .with(GlobalTransform::default())
-            .with(Transform::default())
+            .with(trans)
             .build();
 
         initialise_camera(world);
@@ -116,8 +126,8 @@ fn initialise_camera(world: &mut World) {
     world.create_entity()
         .with(Camera::from(Projection::orthographic(
             0.0,
-            192.0,
             384.0,
+            768.0,
             0.0
         )))
         .with(transform)
