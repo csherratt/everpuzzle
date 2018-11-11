@@ -24,17 +24,13 @@ impl<'a> System<'a> for BlockSystem {
 
     fn run(&mut self, (
             mut sprites, 
-            mut transform, 
+            mut transforms, 
             mut blocks): Self::SystemData)
     {
         // scale block if provided, position them by their size and given coordinate
         // set their sprite number by the block.kind
-        for (sprite, block, trans) in (&mut sprites, &mut blocks, &mut transform).join() {
-            trans.translation = Vector3::new(
-                block.x * 16.0 * trans.scale.x,
-                block.y * 16.0 * trans.scale.y,
-                0.0
-            );
+        for (sprite, block, transform) in (&mut sprites, &mut blocks, &mut transforms).join() {
+            block.set_position(transform);
 
             if let Some(num) = block.kind {
                 sprite.sprite_number = num as usize * 9;
