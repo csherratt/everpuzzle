@@ -1,5 +1,7 @@
 use rand::prelude::*;
 
+// resource that stores the rng generator that will be global
+// accessed via the world
 #[derive(Debug)]
 pub struct RngResource {
     pub rng: SmallRng

@@ -5,8 +5,8 @@ use amethyst::ecs::prelude::{
 #[derive(Clone, Copy, Debug)]
 pub struct Block {
     pub id: i32,
-    pub kind: Option<i32>,
-    pub x: f32,
+    pub kind: Option<i32>, // sprite_number or none
+    pub x: f32, 
     pub y: f32
 }
 

@@ -1,16 +1,22 @@
-use amethyst::input::*;
-use amethyst::prelude::*;
-use amethyst::renderer::*;
-use amethyst::core::cgmath::{Matrix4, Vector3};
+use amethyst::{
+    input::*,
+    prelude::*,
+    renderer::*,
+    core::{Transform, GlobalTransform, cgmath::Vector3},
+    ecs::*
+};
 use rand::prelude::*;
-use amethyst::core::{Transform, GlobalTransform};
-use amethyst::ecs::*;
 
-use basics::block::Block;
-use basics::spritesheet_loader::load_blocks_sprite_sheet;
-use basics::spritesheet_loader::load_sprite_sheet;
-use basics::rng_resource::RngResource;
-use basics::cursor::Cursor;
+use basics::{
+    block::Block,
+    cursor::Cursor,
+    spritesheet_loader::{
+        load_blocks_sprite_sheet,
+        load_sprite_sheet
+    },
+    rng_resource::RngResource,
+};
+
 use data::block_data::BLOCKS;
 use data::helpers::i2tuple;
 
@@ -25,6 +31,7 @@ impl GameMode {
         }
     }
 
+    // creates all entities with block components attached, spritesheet data with sprite_number
     pub fn create_blocks(world: &mut World, kinds: Vec<Option<i32>>) {
         world.register::<Block>();
 
@@ -42,7 +49,7 @@ impl GameMode {
 
             world.create_entity()
                 .with(sprite_render_block)
-                .with(Block::new(0, kinds[i], x, y))
+                .with(Block::new(i as i32, kinds[i], x, y))
                 .with(GlobalTransform::default())
                 .with(trans)
                 .build();
@@ -54,8 +61,10 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
     fn on_start(&mut self, data: StateData<GameData>) {
         let world = data.world;
 
+        // create random generator for random seeded numbers
         let mut rng = SmallRng::from_seed(self.rng_seed);
 
+        // create an array of numbers that all block kinds will have
         let mut block_kinds = Vec::new();
         for i in 0..BLOCKS {
             let num = rng.gen_range(0, 7);
@@ -69,8 +78,10 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         }
 
         GameMode::create_blocks(world, block_kinds);
+        // add the random number generator as a global resource to be used
         world.add_resource::<RngResource>(RngResource { rng });
 
+        // load the cursor sprite and attach its data component
         let sprite_sheet = SpriteRender {
             sprite_sheet: load_sprite_sheet(
                 world,
@@ -96,6 +107,8 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
     }
 }
 
+// create a camera that should have the same dimensions as the
+// display_config.ron. TODO: use the dimensions
 fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
     transform.translation.z = 1.0;
@@ -103,8 +116,8 @@ fn initialise_camera(world: &mut World) {
     world.create_entity()
         .with(Camera::from(Projection::orthographic(
             0.0,
-            500.0,
-            500.0,
+            192.0,
+            384.0,
             0.0
         )))
         .with(transform)

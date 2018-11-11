@@ -1,10 +1,12 @@
 extern crate amethyst;
 extern crate rand;
 
-use amethyst::prelude::*;
-use amethyst::renderer::*;
-use amethyst::core::TransformBundle;
-use amethyst::input::InputBundle;
+use amethyst::{
+    prelude::*,
+    renderer::*,
+    core::TransformBundle,
+    input::InputBundle
+};
 
 mod data;
 mod basics;
@@ -15,14 +17,20 @@ use systems::cursor_system::CursorSystem;
 use game_modes::game_mode::GameMode;
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    // log only warnings to create less logs
+    let mut log = amethyst::LoggerConfig::default();
+    log.level_filter = amethyst::LogLevelFilter::Warn;
+    amethyst::start_logger(log);
 
+    // path to display settings
     let path = format!(
         "{}/src/resources/display_config.ron",
         env!("CARGO_MANIFEST_DIR")
     );
     let config = DisplayConfig::load(&path);
 
+    // start pipeline that clears to white background 
+    // and lets sprites exist with transparency
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([1.0, 1.0, 1.0, 1.0], 1.0)
@@ -33,6 +41,7 @@ fn main() -> amethyst::Result<()> {
             ))
     );
 
+    // static seed for rand crate that can be used to have the same rand seed - good for debugging
     const SOME_SEED: [u8; 16] = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
     // create some randomized seed to be shared
@@ -41,6 +50,7 @@ fn main() -> amethyst::Result<()> {
         *x = rand::random::<u8>();
     }
 
+    // testing different inputs for keyboard/controller
     let binding_path = {
         if cfg!(feature = "sdl_controller") {
             format!("{}/src/resources/input_controller.ron", env!("CARGO_MANIFEST_DIR"))
@@ -50,8 +60,10 @@ fn main() -> amethyst::Result<()> {
         }
     };
 
+    // load input settings
     let input_bundle = InputBundle::<String, String>::new().with_bindings_from_file(&binding_path)?;
 
+    // build with all bundles and custom systems 
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
         .with_bundle(RenderBundle::new(pipe,Some(config))
@@ -59,9 +71,10 @@ fn main() -> amethyst::Result<()> {
             .with_sprite_visibility_sorting(&["transform_system"])
         )?
         .with_bundle(input_bundle)?
-        .with(BlockSystem::new(), "block_system", &["input_system"])
+        .with(BlockSystem::new(), "block_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
+    // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", env!("CARGO_MANIFEST_DIR"));
     let mut game = Application::<GameData>::new(assets_dir, GameMode::new(SOME_SEED), game_data)?;
 
