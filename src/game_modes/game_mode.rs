@@ -22,12 +22,14 @@ use data::helpers::i2tuple;
 
 pub struct GameMode {
     rng_seed: [u8; 16],
+    config: DisplayConfig
 }
 
 impl GameMode {
-    pub fn new(rng_seed: [u8; 16]) -> GameMode {
+    pub fn new(rng_seed: [u8; 16], config: DisplayConfig) -> GameMode {
         GameMode {
-            rng_seed
+            rng_seed,
+            config
         }
     }
 
@@ -57,6 +59,23 @@ impl GameMode {
                 .with(trans)
                 .build();
         }
+    }
+
+    // create a camera that should have the same dimensions as the
+    // display_config.ron. TODO: use the dimensions
+    fn initialise_camera(&mut self, world: &mut World) {
+        let mut transform = Transform::default();
+        transform.translation.z = 1.0;
+
+        world.create_entity()
+            .with(Camera::from(Projection::orthographic(
+                0.0,
+                self.config.dimensions.unwrap().0 as f32,
+                self.config.dimensions.unwrap().1 as f32,
+                0.0
+            )))
+            .with(transform)
+            .build();
     }
 }
 
@@ -111,23 +130,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             .with(trans)
             .build();
 
-        initialise_camera(world);
+        self.initialise_camera(world);
     }
 }
 
-// create a camera that should have the same dimensions as the
-// display_config.ron. TODO: use the dimensions
-fn initialise_camera(world: &mut World) {
-    let mut transform = Transform::default();
-    transform.translation.z = 1.0;
-
-    world.create_entity()
-        .with(Camera::from(Projection::orthographic(
-            0.0,
-            384.0,
-            768.0,
-            0.0
-        )))
-        .with(transform)
-        .build();
-}

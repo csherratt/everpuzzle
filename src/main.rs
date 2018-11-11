@@ -27,7 +27,7 @@ fn main() -> amethyst::Result<()> {
         "{}/src/resources/display_config.ron",
         env!("CARGO_MANIFEST_DIR")
     );
-    let config = DisplayConfig::load(&path);
+    let display_config = DisplayConfig::load(&path);
 
     // start pipeline that clears to white background 
     // and lets sprites exist with transparency
@@ -66,7 +66,7 @@ fn main() -> amethyst::Result<()> {
     // build with all bundles and custom systems 
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
-        .with_bundle(RenderBundle::new(pipe,Some(config))
+        .with_bundle(RenderBundle::new(pipe,Some(display_config))
             .with_sprite_sheet_processor()
             .with_sprite_visibility_sorting(&["transform_system"])
         )?
@@ -76,7 +76,12 @@ fn main() -> amethyst::Result<()> {
 
     // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", env!("CARGO_MANIFEST_DIR"));
-    let mut game = Application::<GameData>::new(assets_dir, GameMode::new(SOME_SEED), game_data)?;
+    let display_resource = DisplayConfig::load(&path);
+    let mut game = Application::new(
+        assets_dir, 
+        GameMode::new(SOME_SEED, display_resource),
+        game_data
+    )?;
 
     game.run();
 
