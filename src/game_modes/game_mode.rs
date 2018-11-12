@@ -1,5 +1,4 @@
 use amethyst::{
-    input::*,
     prelude::*,
     renderer::*,
     core::{Transform, GlobalTransform, cgmath::Vector3},
@@ -17,7 +16,7 @@ use basics::{
     rng_resource::RngResource,
 };
 
-use data::block_data::BLOCKS;
+use data::block_data::{BLOCKS, COLS};
 use data::helpers::i2tuple;
 
 pub struct GameMode {
@@ -36,13 +35,14 @@ impl GameMode {
     // creates all entities with block components attached, spritesheet data with sprite_number
     pub fn create_blocks(world: &mut World, kinds: Vec<Option<i32>>) {
         world.register::<Block>();
+        let mut entities: Vec<Entity> = Vec::new();
 
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
             trans.scale = Vector3::new(4.0, 4.0, 4.0);
 
             // set position instantly so no weird spawn flash happens
-            let mut b = Block::new(kinds[i], i2tuple(i));
+            let mut b = Block::new(i as u32, kinds[i], i2tuple(i));
             b.set_position(&mut trans);
 
             let sprite_render_block = SpriteRender {
@@ -52,12 +52,21 @@ impl GameMode {
                 flip_vertical: false,
             };
 
-            world.create_entity()
+            entities.push(world.create_entity()
                 .with(sprite_render_block)
                 .with(b)
                 .with(GlobalTransform::default())
                 .with(trans)
-                .build();
+                .build());
+        }
+
+        // link each entities block component to the adjacent entities
+        // so that they can easily be called all the time
+        for i in COLS..BLOCKS {
+            let mut storage = world.write_storage::<Block>();
+            let mut top_block = storage.get_mut(entities[i]).expect("failed to get first block");
+
+            top_block.neighbor = Some(entities[i - COLS]);
         }
     }
 
@@ -88,7 +97,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
 
         // create an array of numbers that all block kinds will have
         let mut block_kinds = Vec::new();
-        for i in 0..BLOCKS {
+        for _i in 0..BLOCKS {
             let num = rng.gen_range(0, 7);
 
             if num == 6 {

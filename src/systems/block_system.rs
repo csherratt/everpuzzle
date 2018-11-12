@@ -1,22 +1,19 @@
 use amethyst::{
     ecs::*,
     renderer::*,
-    core::*,
-    core::cgmath::Vector3
+    core::Transform,
 };
 
 use basics::block::Block;
 use data::block_data::{BLOCKS, COLS};
-use std::rc::Rc;
 
 pub struct BlockSystem {
-    assign_neighbors: bool    
+
 }
 
 impl BlockSystem {
     pub fn new() -> BlockSystem {
         BlockSystem { 
-            assign_neighbors: true
         }
     }
 }
@@ -31,7 +28,8 @@ impl<'a> System<'a> for BlockSystem {
     fn run(&mut self, (
             mut sprites, 
             mut transforms, 
-            mut blocks): Self::SystemData)
+            mut blocks,
+            ): Self::SystemData)
     {
         // scale block if provided, position them by their size and given coordinate
         // set their sprite number by the block.kind
@@ -46,30 +44,41 @@ impl<'a> System<'a> for BlockSystem {
         }
 
         let mut search_blocks = (&mut blocks).join();
+        for i in 0..BLOCKS {
+            let top_block = search_blocks.get_unchecked(i as u32).unwrap();
 
-        // detect if any block can currently fall by looking for the
-        // bottom blocks.kind, if so set a var to true
-        for i in 0..BLOCKS - COLS {
-            let bottom_block = search_blocks.get_unchecked(i as u32).unwrap();
-            let top_block = search_blocks.get_unchecked((i + COLS) as u32).unwrap();
+            if let Some(b) = top_block.neighbor {
+                let mut bottom_block = blocks.get(b).expect("bottom block");
 
-            if bottom_block.kind == None {
-                top_block.can_fall = true;
-            } 
-        }
-
-        // if any top block can fall, switch kinds with bottom
-        // since bottom was always none - top can be none afterwards
-        for i in 0..BLOCKS - COLS {
-            let bottom_block = search_blocks.get_unchecked(i as u32).unwrap();
-            let top_block = search_blocks.get_unchecked((i + COLS) as u32).unwrap();
-
-            if top_block.can_fall {
-                bottom_block.kind = top_block.kind;
-                top_block.kind = None;
-                top_block.can_fall = false;
+                if bottom_block.kind == None {
+                    top_block.can_fall = true;
+                }
             }
         }
+        /*
+        for block in (&mut blocks).join() {
+
+            if let Some(b) = block.neighbor {
+                let mut bottom_block = read_blocks.get(b).expect("bottom block");
+
+                if bottom_block.kind == None {
+                    block.can_fall = true;
+                }
+            }
+        }*/
+
+        /*
+        for block in (&mut blocks).join() {
+            if block.can_fall {
+                if let Some(b) = block.neighbor {
+                    let mut bottom_block = blocks.get_mut(b).expect("bottom block");
+
+                    bottom_block.kind = block.kind;
+                    block.kind = None;
+                    block.can_fall = true;
+                }
+            }
+        }*/
     }
 }
 
