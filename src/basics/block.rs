@@ -1,13 +1,22 @@
 use amethyst::{
     ecs::prelude::{Component, DenseVecStorage}, 
-    core::Transform
+    core::Transform,
 };
 
-#[derive(Clone, Copy, Debug)]
+// Each direction a neighbor would be from the current id.
+// so from 0 the right neighbor would be just one apart from it
+// inside of an array that is
+pub enum BlockNeighbors {
+    DOWN = -6,
+    TOP = 6,
+    RIGHT = 1,
+    LEFT = -1,
+}
+
 pub struct Block {
     pub kind: Option<i32>, // sprite_number or none
     pub pos: (f32, f32),
-    pub can_fall: bool
+    pub can_fall: bool,
 }
 
 impl Block {
@@ -15,7 +24,7 @@ impl Block {
         Block {
             kind,
             pos,
-            can_fall: false
+            can_fall: false,
         }
     }
 
@@ -24,6 +33,7 @@ impl Block {
         transform.translation.y = self.pos.1 * 16.0 * transform.scale.y;
     }
 }
+
 
 impl Component for Block {
     type Storage = DenseVecStorage<Self>;
