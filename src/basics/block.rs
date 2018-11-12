@@ -1,30 +1,24 @@
 use amethyst::{
-    ecs::prelude::{Component, DenseVecStorage}, 
+    ecs::prelude::{Entity, Component, DenseVecStorage}, 
     core::Transform,
 };
 
-// Each direction a neighbor would be from the current id.
-// so from 0 the right neighbor would be just one apart from it
-// inside of an array that is
-pub enum BlockNeighbors {
-    DOWN = -6,
-    TOP = 6,
-    RIGHT = 1,
-    LEFT = -1,
-}
-
 pub struct Block {
+    pub id: u32, // id to be used with join().get_unchecked(u32)
     pub kind: Option<i32>, // sprite_number or none
     pub pos: (f32, f32),
     pub can_fall: bool,
+    pub neighbor: Option<Entity>
 }
 
 impl Block {
-    pub fn new(kind: Option<i32>, pos: (f32, f32)) -> Block {
+    pub fn new(id: u32, kind: Option<i32>, pos: (f32, f32)) -> Block {
         Block {
+            id,
             kind,
             pos,
             can_fall: false,
+            neighbor: None
         }
     }
 

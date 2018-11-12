@@ -21,8 +21,8 @@ pub fn load_blocks_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     // `texture_id` is a application defined ID given to the texture to store in the `World`.
     // This is needed to link the texture to the sprite_sheet.
     let texture_id = 0;
-    let mut material_texture_set = world.write_resource::<MaterialTextureSet>();
-    material_texture_set.insert(texture_id, texture_handle);
+    world.write_resource::<MaterialTextureSet>()
+        .insert(texture_id, texture_handle);
 
     const SPRITESHEET_SIZE: (f32, f32) = (144.0, 144.0);
 
@@ -72,8 +72,7 @@ pub fn load_spritesheet(world: &mut World, name: &str, filename: &str) -> Sprite
     // link texture with spritesheet
     // TODO: Texture id should be unique
     let texture_id = 1;
-    let mut material_texture_set = world
-        .write_resource::<MaterialTextureSet>()
+    world.write_resource::<MaterialTextureSet>()
         .insert(texture_id, {
             loader.load(
                 name,

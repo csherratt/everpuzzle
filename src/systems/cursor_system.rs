@@ -1,6 +1,6 @@
 use amethyst::{
     ecs::*,
-    core::{Transform, cgmath::Vector3},
+    core::Transform,
     renderer::*,
     input::*
 };
@@ -89,7 +89,7 @@ impl<'a> System<'a> for CursorSystem {
 
     fn run(&mut self, (
             mut sprites, 
-            mut transforms, 
+            mut transforms,
             mut cursors, 
             mut input,
             mut generator,
