@@ -130,14 +130,7 @@ impl<'a> System<'a> for CursorSystem {
         // reset all block colors to a random value
         if self.press(&mut input, "space") {
             for block in (&mut blocks).join() {
-                let num = generator.rng.gen_range(0, 7);
-
-                if num == 6 {
-                    block.kind = None;
-                }
-                else {
-                    block.kind = Some(num);
-                }
+                block.kind = generator.rng.gen_range(0, 7) - 1;
             }
         }
 
@@ -151,7 +144,7 @@ impl<'a> System<'a> for CursorSystem {
                 let b1 = search_blocks.get_unchecked(pos as u32).unwrap();
                 let b2 = search_blocks.get_unchecked((pos + 1) as u32).unwrap();
 
-                let mut temp_kind: Option<i32> = b1.kind;
+                let mut temp_kind = b1.kind;
                 b1.kind = b2.kind;
                 b2.kind = temp_kind;
             }

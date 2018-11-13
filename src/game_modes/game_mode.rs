@@ -18,6 +18,7 @@ use basics::{
 
 use data::block_data::{BLOCKS, COLS};
 use data::helpers::i2tuple;
+use std::boxed::Box;
 
 pub struct GameMode {
     rng_seed: [u8; 16],
@@ -33,7 +34,7 @@ impl GameMode {
     }
 
     // creates all entities with block components attached, spritesheet data with sprite_number
-    pub fn create_blocks(world: &mut World, kinds: Vec<Option<i32>>) {
+    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) {
         world.register::<Block>();
         let mut entities: Vec<Entity> = Vec::new();
 
@@ -58,15 +59,6 @@ impl GameMode {
                 .with(GlobalTransform::default())
                 .with(trans)
                 .build());
-        }
-
-        // link each entities block component to the adjacent entities
-        // so that they can easily be called all the time
-        for i in COLS..BLOCKS {
-            let mut storage = world.write_storage::<Block>();
-            let mut top_block = storage.get_mut(entities[i]).expect("failed to get first block");
-
-            top_block.neighbor = Some(entities[i - COLS]);
         }
     }
 
@@ -98,14 +90,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         // create an array of numbers that all block kinds will have
         let mut block_kinds = Vec::new();
         for _i in 0..BLOCKS {
-            let num = rng.gen_range(0, 7);
-
-            if num == 6 {
-               block_kinds.push(None);
-            }
-            else {
-                block_kinds.push(Some(num));
-            }
+            block_kinds.push(rng.gen_range(0, 7) - 1);
         }
 
         GameMode::create_blocks(world, block_kinds);
