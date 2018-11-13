@@ -1,14 +1,14 @@
 use amethyst::{
-    ecs::prelude::{Entity, Component, DenseVecStorage}, 
+    ecs::prelude::{Component, DenseVecStorage}, 
     core::Transform,
 };
-use data::block_data::ROWS;
 
 pub struct Block {
     pub id: u32, // id to be used with join().get_unchecked(u32)
     pub kind: i32, // sprite_number or -1
     pub pos: (f32, f32),
     pub can_fall: bool,
+    pub should_clear: bool
 }
 
 impl Block {
@@ -18,6 +18,7 @@ impl Block {
             kind,
             pos,
             can_fall: false,
+            should_clear: false
         }
     }
 
@@ -42,7 +43,6 @@ impl Block {
     pub fn is_comboable_with(&mut self, other: &mut Block) -> bool {
         if self.is_comboable() {
             if other.kind != -1 && other.kind == self.kind {
-                println!("comparison {:?}, {:?}", self.kind, other.kind);
                 return true
             }
         }
@@ -59,11 +59,9 @@ impl Block {
             if let Some(block1) = b1 {
                 if let Some(block2) = b2 {
                     if block1.is_comboable_with(self) && block2.is_comboable_with(self) {
-                        println!("{:?}, {:?}, {:?}", self.kind, block1.kind, block2.kind);
-
-                        self.kind = -1;
-                        block1.kind = -1;
-                        block2.kind = -1;
+                        self.should_clear = true;
+                        block1.should_clear = true;
+                        block2.should_clear = true;
                     }
                 }
             }
