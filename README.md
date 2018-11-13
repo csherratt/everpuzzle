@@ -14,6 +14,15 @@ This is also a way for me to learn Rust more and to help it grow.
 ## [Amethyst Game Engine](https://github.com/amethyst/amethyst)
 I've tried out most game engines there are right now for rust and all of them are heavily in development. Some are unmaintained or just don't have any visions for the future. As well it's important to me that the engine I'm using tries to achieve multithreading. And thats what Amethyst tries! So even if it's harder to make games with it, I'll use it. 
 
+## How to Build
+If you're new to Rust: [Download Rust](https://www.rust-lang.org/en-US/install.html)
+
+1. Clone/Download this repository into a folder
+2. Open a Command Line inside the folder and run: cargo run (Downloading all crates will take some time...)
+3. If you get errors make sure to update your Rust Version before creating issues here! Run: rustup update
+
+If any steps were unclear or you had any issues, please open an issue. 
+
 ## About me
 *Skytrias #8787 on Discord*
 
