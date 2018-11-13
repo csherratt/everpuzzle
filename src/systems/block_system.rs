@@ -5,7 +5,14 @@ use amethyst::{
 };
 
 use basics::block::Block;
-use data::block_data::{BLOCKS, COLS};
+use data::{
+    helpers::tuple2i,
+    block_data::{
+        BLOCKS, 
+        COLS, 
+        ROWS
+    }
+};
 
 pub struct BlockSystem {
 
@@ -36,49 +43,59 @@ impl<'a> System<'a> for BlockSystem {
         for (sprite, block, transform) in (&mut sprites, &mut blocks, &mut transforms).join() {
             block.set_position(transform);
 
-            if let Some(num) = block.kind {
-                sprite.sprite_number = num as usize * 9;
-            } else {
+            if block.kind != -1 {
+                sprite.sprite_number = block.kind as usize * 9;
+            }
+            else {
                 sprite.sprite_number = 8;
             }
         }
 
         let mut search_blocks = (&mut blocks).join();
-        for i in 0..BLOCKS {
+        // detect if any block can currently fall by looking for the
+        // bottom blocks.kind, if so set a var to true
+        for i in COLS..BLOCKS {
             let top_block = search_blocks.get_unchecked(i as u32).unwrap();
+            let bottom_block = search_blocks.get_unchecked((i - COLS) as u32).unwrap();
 
-            if let Some(b) = top_block.neighbor {
-                let mut bottom_block = blocks.get(b).expect("bottom block");
-
-                if bottom_block.kind == None {
-                    top_block.can_fall = true;
-                }
+            if bottom_block.kind != -1 {
+                top_block.can_fall = true;
             }
         }
-        /*
-        for block in (&mut blocks).join() {
 
-            if let Some(b) = block.neighbor {
-                let mut bottom_block = read_blocks.get(b).expect("bottom block");
+        // if any top blocks can fall, switch kinds with bottom
+        // since bottom was always none - top can be none
+        for i in COLS..BLOCKS {
+            let top_block = search_blocks.get_unchecked(i as u32).unwrap();
+            let bottom_block = search_blocks.get_unchecked((i - COLS) as u32).unwrap();
 
-                if bottom_block.kind == None {
-                    block.can_fall = true;
-                }
+            if top_block.can_fall {
+                bottom_block.kind = top_block.kind;
+                top_block.kind = -1;
+                top_block.can_fall = false;
             }
-        }*/
+        }
 
-        /*
-        for block in (&mut blocks).join() {
-            if block.can_fall {
-                if let Some(b) = block.neighbor {
-                    let mut bottom_block = blocks.get_mut(b).expect("bottom block");
+        let search_color = 0;
+        for y in 0..ROWS {
+            for x in 0..COLS {
+                let i = tuple2i((x as f32, y as f32));
 
-                    bottom_block.kind = block.kind;
-                    block.kind = None;
-                    block.can_fall = true;
+                let b1 = search_blocks.get_unchecked(i as u32).unwrap();
+                let mut b2 = None;
+                let mut b3 = None;
+    
+                if x < COLS - 1 {
+                    b2 = Some(search_blocks.get_unchecked((i + 1) as u32).unwrap());
                 }
-            }
-        }*/
+
+                if x < COLS - 2 {
+                    b3 = Some(search_blocks.get_unchecked((i + 2) as u32).unwrap());
+                }
+
+                b1.check_similar_blocks(b2, b3); 
+           }
+        }
     }
 }
 
