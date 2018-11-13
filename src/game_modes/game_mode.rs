@@ -16,9 +16,8 @@ use basics::{
     rng_resource::RngResource,
 };
 
-use data::block_data::{BLOCKS, COLS};
+use data::block_data::BLOCKS;
 use data::helpers::i2tuple;
-use std::boxed::Box;
 
 pub struct GameMode {
     rng_seed: [u8; 16],
