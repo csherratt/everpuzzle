@@ -4,9 +4,11 @@ extern crate rand;
 use amethyst::{
     prelude::*,
     renderer::*,
-    core::TransformBundle,
-    input::InputBundle
+    core::{TransformBundle, frame_limiter::FrameRateLimitStrategy},
+    input::InputBundle,
+    utils::application_root_dir
 };
+use std::time::Duration;
 
 mod data;
 mod basics;
@@ -22,10 +24,12 @@ fn main() -> amethyst::Result<()> {
     log.level_filter = amethyst::LogLevelFilter::Warn;
     amethyst::start_logger(log);
 
+    // necessary to get users path on each seperate device
+    let app_root = application_root_dir();
     // path to display settings
     let path = format!(
         "{}/src/resources/display_config.ron",
-        env!("CARGO_MANIFEST_DIR")
+        app_root
     );
     let display_config = DisplayConfig::load(&path);
 
@@ -53,10 +57,10 @@ fn main() -> amethyst::Result<()> {
     // testing different inputs for keyboard/controller
     let binding_path = {
         if cfg!(feature = "sdl_controller") {
-            format!("{}/src/resources/input_controller.ron", env!("CARGO_MANIFEST_DIR"))
+            format!("{}/src/resources/input_controller.ron", app_root)
         }
         else {
-            format!("{}/src/resources/input.ron", env!("CARGO_MANIFEST_DIR"))
+            format!("{}/src/resources/input.ron", app_root)
         }
     };
 
@@ -66,7 +70,7 @@ fn main() -> amethyst::Result<()> {
     // build with all bundles and custom systems 
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
-        .with_bundle(RenderBundle::new(pipe,Some(display_config))
+        .with_bundle(RenderBundle::new(pipe, Some(display_config))
             .with_sprite_sheet_processor()
             .with_sprite_visibility_sorting(&["transform_system"])
         )?
@@ -75,15 +79,12 @@ fn main() -> amethyst::Result<()> {
         .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
     // set the assets dir where all sprites will be loaded from
-    let assets_dir = format!("{}/src/sprites/", env!("CARGO_MANIFEST_DIR"));
+    let assets_dir = format!("{}/src/sprites/", app_root);
     let display_resource = DisplayConfig::load(&path);
-    let mut game = Application::new(
-        assets_dir, 
-        GameMode::new(SOME_SEED, display_resource),
-        game_data
-    )?;
-
-    game.run();
+    let game = Application::build(assets_dir, GameMode::new(SOME_SEED, display_resource))?
+        .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 60)
+        .build(game_data)?
+        .run();
 
     Ok(())
 }
