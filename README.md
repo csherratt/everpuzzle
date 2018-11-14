@@ -23,6 +23,17 @@ If you're new to Rust: [Download Rust](https://www.rust-lang.org/en-US/install.h
 
 If any steps were unclear or you had any issues, please open an issue. 
 
+## How to Play
+_bound to change_
+
+Keyboard:
+* WASD: Move the Cursor around
+* S: Swap Blocks
+* Space: Reset Blocks
+
+Controller:
+_incoming_
+
 ## About me
 *Skytrias #8787 on Discord*
 
