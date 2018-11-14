@@ -114,7 +114,6 @@ impl<'a> System<'a> for BlockSystem {
             if block.should_clear {
                 block.kind = -1;
                 block.should_clear = false;
-
             }
         }
     }
