@@ -1,6 +1,7 @@
 use amethyst::{
     ecs::prelude::{Component, DenseVecStorage}, 
     core::Transform,
+    renderer::SpriteRender
 };
 
 pub struct Block {
@@ -8,7 +9,11 @@ pub struct Block {
     pub kind: i32, // sprite_number or -1
     pub pos: (f32, f32),
     pub can_fall: bool,
-    pub should_clear: bool
+    pub should_clear: bool, 
+
+    // animation
+    pub anim_counter: usize, 
+    pub anim_offset: usize
 }
 
 impl Block {
@@ -18,7 +23,31 @@ impl Block {
             kind,
             pos,
             can_fall: false,
-            should_clear: false
+            should_clear: false,
+            anim_counter: 0,
+            anim_offset: 0,
+        }
+    }
+
+    pub fn kind_visible(&mut self, sprite: &mut SpriteRender) {
+        if self.anim_counter > 0 {
+            self.anim_counter -= 1;
+        }
+
+        // if block is at bootom
+        if self.pos.1 == 0.0 {
+            // set to static blacked out sprite
+            self.anim_offset = 1;
+        }
+        else {
+            self.anim_offset = 0;
+        }
+    
+        if self.kind != -1 {
+            sprite.sprite_number = self.kind as usize * 9 + self.anim_offset;
+        }
+        else {
+            sprite.sprite_number = 8;
         }
     }
 

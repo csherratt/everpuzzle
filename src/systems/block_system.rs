@@ -39,13 +39,7 @@ impl<'a> System<'a> for BlockSystem {
         // set their sprite number by the block.kind
         for (sprite, block, transform) in (&mut sprites, &mut blocks, &mut transforms).join() {
             block.set_position(transform);
-
-            if block.kind != -1 {
-                sprite.sprite_number = block.kind as usize * 9;
-            }
-            else {
-                sprite.sprite_number = 8;
-            }
+            block.kind_visible(sprite);
         }
     
         // indent because of the (&mut blocks).join() not allowing
@@ -86,12 +80,19 @@ impl<'a> System<'a> for BlockSystem {
                 // closure so we can use inside variables that dont change
                 // this returns a block that is within boundaries
                 let mut get_block = | index, x_off, y_off | -> Option<&mut Block> {
-                    if (x as usize) < COLS - 1 - x_off && (y as usize) < ROWS - 1 - y_off {
-                        Some(search_blocks.get_unchecked(index as u32).unwrap())
+                    // if only x is specified, only check on x coordinate, otherwhise opposite
+                    if (x as usize) != 0 && (y as usize) == 0 {
+                        if (x as usize) < COLS - 1 - x_off {
+                            return Some(search_blocks.get_unchecked(index as u32).unwrap());
+                        }
                     }
                     else {
-                        None
+                        if (y as usize) < ROWS - 1 - y_off {
+                            return Some(search_blocks.get_unchecked(index as u32).unwrap());
+                        }
                     }
+                    
+                    return None;
                 };
                 
                 // example, we start at top left, search for two right, two bottom
