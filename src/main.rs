@@ -81,7 +81,7 @@ fn main() -> amethyst::Result<()> {
     // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", app_root);
     let display_resource = DisplayConfig::load(&path);
-    let game = Application::build(assets_dir, GameMode::new(SOME_SEED, display_resource))?
+    Application::build(assets_dir, GameMode::new(SOME_SEED, display_resource))?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 60)
         .build(game_data)?
         .run();

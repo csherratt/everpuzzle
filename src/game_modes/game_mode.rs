@@ -2,7 +2,8 @@ use amethyst::{
     prelude::*,
     renderer::*,
     core::{Transform, GlobalTransform, cgmath::Vector3},
-    ecs::*
+    ecs::*,
+    assets::*
 };
 use rand::prelude::*;
 
@@ -10,8 +11,8 @@ use basics::{
     block::Block,
     cursor::Cursor,
     spritesheet_loader::{
-        load_blocks_sprite_sheet,
-        load_spritesheet
+        SpriteSheetLoader,
+        load_sprite_sheet
     },
     rng_resource::RngResource,
 };
@@ -46,7 +47,7 @@ impl GameMode {
             b.set_position(&mut trans);
 
             let sprite_render_block = SpriteRender {
-                sprite_sheet: load_blocks_sprite_sheet(world),
+                sprite_sheet: SpriteSheetLoader::load_blocks_sprite_sheet(world),
                 sprite_number: 0,
                 flip_horizontal: false,
                 flip_vertical: false,
@@ -98,7 +99,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
 
         // load the cursor sprite and attach its data component
         let sprite_sheet = SpriteRender {
-            sprite_sheet: load_spritesheet(
+            sprite_sheet: load_sprite_sheet(
                 world,
                 "cursor.png",
                 "cursor_spritesheet.ron"

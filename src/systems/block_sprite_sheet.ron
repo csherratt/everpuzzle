@@ -1,0 +1,11 @@
+(
+	spritesheet_width: 144.0, 
+	spritesheet_height: 144.0, 
+	sprites: [
+		x: 0.0,
+		y: 0.0,
+		width: 16.0,
+		height: 16.0,
+		offsets: Some((-8.0, -8.0))
+	]
+)
