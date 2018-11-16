@@ -8,7 +8,7 @@ use amethyst::{
 use basics::{
     block::Block,
     cursor::Cursor,
-    rng_resource::RngResource
+    kind_generator::KindGenerator
 };
 
 use data::{
@@ -83,7 +83,7 @@ impl<'a> System<'a> for CursorSystem {
         WriteStorage<'a, Transform>,
         WriteStorage<'a, Cursor>,
         Read<'a, InputHandler<String, String>>,
-        Write<'a, RngResource>,
+        Write<'a, KindGenerator>,
         WriteStorage<'a, Block>,
     );
 
@@ -92,7 +92,7 @@ impl<'a> System<'a> for CursorSystem {
             mut transforms,
             mut cursors, 
             mut input,
-            mut generator,
+            mut kind_gen,
             mut blocks): Self::SystemData) 
     {
         if self.hold(&mut input, "up") {
@@ -129,8 +129,11 @@ impl<'a> System<'a> for CursorSystem {
 
         // reset all block colors to a random value
         if self.press(&mut input, "space") {
-            for block in (&mut blocks).join() {
-                block.kind = generator.rng.gen_range(0, 7) - 1;
+            let kinds = kind_gen.create_stack(5, 8);
+            
+            let mut search_blocks = (&mut blocks).join();
+            for i in 0..BLOCKS {
+                search_blocks.get_unchecked(i as u32).unwrap().kind = kinds[i];
             }
         }
 
