@@ -15,6 +15,7 @@ use basics::{
         load_sprite_sheet
     },
     rng_resource::RngResource,
+    kind_generator::KindGenerator
 };
 
 use data::block_data::BLOCKS;
@@ -36,7 +37,6 @@ impl GameMode {
     // creates all entities with block components attached, spritesheet data with sprite_number
     pub fn create_blocks(world: &mut World, kinds: Vec<i32>) {
         world.register::<Block>();
-        let mut entities: Vec<Entity> = Vec::new();
 
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
@@ -53,12 +53,12 @@ impl GameMode {
                 flip_vertical: false,
             };
 
-            entities.push(world.create_entity()
+            world.create_entity()
                 .with(sprite_render_block)
                 .with(b)
                 .with(GlobalTransform::default())
                 .with(trans)
-                .build());
+                .build();
         }
     }
 
@@ -85,17 +85,14 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         let world = data.world;
 
         // create random generator for random seeded numbers
-        let mut rng = SmallRng::from_seed(self.rng_seed);
+        let mut kind_gen: KindGenerator = KindGenerator { 
+            rng: SmallRng::from_seed(self.rng_seed) 
+        };
+        let kinds = kind_gen.create_stack(5, 8);
 
-        // create an array of numbers that all block kinds will have
-        let mut block_kinds = Vec::new();
-        for _i in 0..BLOCKS {
-            block_kinds.push(rng.gen_range(0, 7) - 1);
-        }
-
-        GameMode::create_blocks(world, block_kinds);
+        GameMode::create_blocks(world, kinds);
         // add the random number generator as a global resource to be used
-        world.add_resource::<RngResource>(RngResource { rng });
+        world.add_resource::<KindGenerator>(kind_gen);
 
         // load the cursor sprite and attach its data component
         let sprite_sheet = SpriteRender {

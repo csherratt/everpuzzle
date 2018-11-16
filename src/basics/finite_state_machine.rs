@@ -3,6 +3,7 @@ use amethyst::ecs::prelude::{Component, DenseVecStorage};
 use std::collections::HashMap;
 use std::boxed::Box;
 
+/*
 pub trait State {
     fn execute(&self);
     fn exit(&self);
@@ -98,7 +99,6 @@ impl FiniteStateMachine {
     }
 }
 
-/*
 impl Component for FiniteStateMachine {
     type Storage = DenseVecStorage<Self>;
 }*/
