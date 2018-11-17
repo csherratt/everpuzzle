@@ -14,7 +14,6 @@ use basics::{
         SpriteSheetLoader,
         load_sprite_sheet
     },
-    rng_resource::RngResource,
     kind_generator::KindGenerator
 };
 
@@ -45,6 +44,7 @@ impl GameMode {
             // set position instantly so no weird spawn flash happens
             let mut b = Block::new(i as u32, kinds[i], i2tuple(i));
             b.set_position(&mut trans);
+            b.init_events();
 
             let sprite_render_block = SpriteRender {
                 sprite_sheet: SpriteSheetLoader::load_blocks_sprite_sheet(world),

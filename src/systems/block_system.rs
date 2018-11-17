@@ -116,6 +116,8 @@ impl<'a> System<'a> for BlockSystem {
                 block.kind = -1;
                 block.should_clear = false;
             }
+
+            (block.states_execute.get("FALL").unwrap())(block);
         }
     }
 }

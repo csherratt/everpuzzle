@@ -14,6 +14,7 @@ mod data;
 mod basics;
 mod game_modes;
 mod systems;
+mod states;
 use systems::block_system::BlockSystem;
 use systems::cursor_system::CursorSystem;
 use game_modes::game_mode::GameMode;
