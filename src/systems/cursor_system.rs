@@ -17,7 +17,6 @@ use data::{
 };
 
 use std::collections::HashMap;
-use rand::prelude::*;
 
 pub struct CursorSystem {
     key_presses: HashMap<String, i32>
@@ -47,7 +46,7 @@ impl CursorSystem {
 
             // special, detects at frame 0 and later on returns true all the 
             // time like in the real game
-            if result == 0 || result > 8 {
+            if result == 0 || result > 16 {
                 *self.key_presses.get_mut(name).unwrap() += 1;
                 return true;
             }
@@ -158,7 +157,7 @@ impl<'a> System<'a> for CursorSystem {
 
             sprite.sprite_number = cursor.anim_offset as usize;
             if cursor.anim_offset < 7.0 {
-                cursor.anim_offset += 1.0 / 2.0;
+                cursor.anim_offset += 1.0 / 4.0;
             }
             else {
                 cursor.anim_offset = 0.0;

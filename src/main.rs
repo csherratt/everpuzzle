@@ -6,7 +6,7 @@ use amethyst::{
     renderer::*,
     core::{TransformBundle, frame_limiter::FrameRateLimitStrategy},
     input::InputBundle,
-    utils::application_root_dir
+    utils::application_root_dir,
 };
 use std::time::Duration;
 
@@ -14,9 +14,11 @@ mod data;
 mod basics;
 mod game_modes;
 mod systems;
-mod states;
-use systems::block_system::BlockSystem;
-use systems::cursor_system::CursorSystem;
+use systems::{
+    block_system::BlockSystem,
+    cursor_system::CursorSystem,
+    fps_system::FPSSystem,
+};
 use game_modes::game_mode::GameMode;
 
 fn main() -> amethyst::Result<()> {
@@ -76,7 +78,8 @@ fn main() -> amethyst::Result<()> {
             .with_sprite_visibility_sorting(&["transform_system"])
         )?
         .with_bundle(input_bundle)?
-        .with(BlockSystem::new(), "block_system", &[])
+        .with(FPSSystem, "fps_system", &[])
+        .with(BlockSystem, "block_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
     // set the assets dir where all sprites will be loaded from

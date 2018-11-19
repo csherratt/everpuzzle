@@ -2,8 +2,7 @@ use amethyst::{
     prelude::*,
     renderer::*,
     core::{Transform, GlobalTransform, cgmath::Vector3},
-    ecs::*,
-    assets::*
+    utils::fps_counter::FPSCounter,
 };
 use rand::prelude::*;
 
@@ -14,7 +13,7 @@ use basics::{
         SpriteSheetLoader,
         load_sprite_sheet
     },
-    kind_generator::KindGenerator
+    kind_generator::KindGenerator,
 };
 
 use data::block_data::BLOCKS;
@@ -44,7 +43,6 @@ impl GameMode {
             // set position instantly so no weird spawn flash happens
             let mut b = Block::new(i as u32, kinds[i], i2tuple(i));
             b.set_position(&mut trans);
-            b.init_events();
 
             let sprite_render_block = SpriteRender {
                 sprite_sheet: SpriteSheetLoader::load_blocks_sprite_sheet(world),
@@ -120,6 +118,8 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             .with(GlobalTransform::default())
             .with(trans)
             .build();
+
+        world.add_resource::<FPSCounter>(Default::default());
 
         self.initialise_camera(world);
     }

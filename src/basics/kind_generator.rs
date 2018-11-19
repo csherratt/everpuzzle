@@ -1,7 +1,6 @@
 use rand::prelude::*;
 use data::block_data::{
     COLS, 
-    ROWS,
     BLOCKS,
 };
 
