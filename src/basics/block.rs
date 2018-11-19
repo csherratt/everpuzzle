@@ -22,7 +22,7 @@ use data::{
 
 const LAND_ANIM: [usize; 10] = [2, 2, 2, 3, 3, 3, 4, 4, 4, 0];
 const LAND_TIME: i32 = 10;
-const FLASH_ANIM: [usize; 4] = [7, 7, 0, 0];
+const FLASH_ANIM: [usize; 4] = [6, 6, 0, 0];
 const FLASH_TIME: i32 = 44; 
 
 // All states a blocks can be in
