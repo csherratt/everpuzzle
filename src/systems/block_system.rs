@@ -64,8 +64,8 @@ impl<'a> System<'a> for BlockSystem {
                 self.combo_counter = 0;
 
                 let flash = 44;
-                let face = 44;
-                let pop = 44;
+                let face = 15;
+                let pop = 9;
 
                 let all_time = flash + face + pop * self.clear_queue.len();
                 
