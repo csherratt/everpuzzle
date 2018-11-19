@@ -79,7 +79,7 @@ fn main() -> amethyst::Result<()> {
         )?
         .with_bundle(input_bundle)?
         .with(FPSSystem, "fps_system", &[])
-        .with(BlockSystem, "block_system", &[])
+        .with(BlockSystem::new(), "block_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
     // set the assets dir where all sprites will be loaded from
