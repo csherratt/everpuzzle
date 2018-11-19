@@ -20,6 +20,11 @@ use data::{
     block_data::COLS,
 };
 
+const LAND_ANIM: [usize; 10] = [2, 2, 2, 3, 3, 3, 4, 4, 4, 0];
+const LAND_TIME: i32 = 10;
+const FLASH_ANIM: [usize; 4] = [7, 7, 0, 0];
+const FLASH_TIME: i32 = 44; 
+
 // All states a blocks can be in
 #[derive(PartialEq, Clone)]
 pub enum States {
@@ -28,6 +33,7 @@ pub enum States {
     Fall,
     Land,
     Move,
+    Clear,
 }
 
 pub struct Block {
@@ -37,7 +43,6 @@ pub struct Block {
     pub offset: (f32, f32),
     pub can_fall: bool,
     pub should_clear: bool, 
-    pub chainable: bool, 
 
     // animation
     pub anim_counter: usize, 
@@ -46,9 +51,15 @@ pub struct Block {
     // state machine variables
     pub counter: i32,
     pub state: States,
-    pub land_anim: [usize; 10], 
-
     pub move_dir: f32, // used for move animation movement
+
+    // clear variables
+    pub chainable: bool, 
+    pub clear_counter: i32, 
+    pub clear_anim_counter: i32, 
+    pub clearing: bool, 
+    pub clear_time: i32,
+    pub clear_start_counter: i32,
 }
 
 impl Block {
@@ -60,14 +71,20 @@ impl Block {
             offset: (0.0, 0.0),
             can_fall: false,
             should_clear: false,
-            chainable: false,
 
             anim_counter: 0,
             anim_offset: 0,
             counter: 0,
             state: States::Idle,
-            land_anim: [2, 2, 2, 3, 3, 3, 4, 4, 4, 0],
             move_dir: 1.0, 
+
+            // clearing
+            chainable: false,
+            clear_counter: 0,
+            clear_anim_counter: 0,
+            clearing: false,
+            clear_time: 0,
+            clear_start_counter: 0,
         }
     }
 
@@ -94,6 +111,11 @@ impl Block {
 
         // clearing
         self.chainable = false;
+        self.clear_time = 0;
+        self.clear_counter = 0;
+        self.clear_anim_counter = 0;
+        self.clearing = false;
+        self.clear_start_counter = 0;
     }
 
     // this is empty when the kind isnt anything and the state is idle
@@ -124,7 +146,7 @@ impl Block {
             return true;
         }
 
-        if self.state == States::Land && self.counter < self.land_anim.len() as i32 {
+        if self.state == States::Land && self.counter < LAND_TIME {
             return true;
         }
 
@@ -214,7 +236,8 @@ impl Block {
             self.anim_offset = 1;
         }
    
-        if self.kind != -1 {
+        // only visible when kind isnt null and clearing ended
+        if self.kind != -1 || self.clearing {
             sprite.sprite_number = self.kind as usize * 9 + self.anim_offset;
         }
         else {
@@ -230,45 +253,60 @@ impl Block {
 
     // combo detectable when
     // kidn isnt -1
+    // currently landing and in its last counter time
     pub fn is_comboable(&mut self) -> bool {
+        // TODO add garbage
+
         if self.pos.1 == 0.0 {
-            return false
+            return false;
         }
 
-        if self.kind != -1 {
-            return true
+        if self.kind != -1 && self.state == States::Idle {
+            return true;
         }
 
-        return false
+        if self.state == States::Land && self.counter < LAND_TIME {
+            return true;
+        }
+
+        return false;
     }
 
     // wether this block is comboable and also matches with another kind
     pub fn is_comboable_with(&mut self, other: &mut Block) -> bool {
         if self.is_comboable() {
             if other.kind != -1 && other.kind == self.kind {
-                return true
+                return true;
             }
         }
 
         // check if kinds exist, then compare them
-        return false
+        return false;
     }
 
     // returns an array of comboable blocks including this block
     // wether 2 blocks have the same kind as this block - change state to CLEAR
     // returns an empty array otherwhise
-    pub fn check_similar_blocks(&mut self, b1: Option<&mut Block>, b2: Option<&mut Block>) {
+    pub fn check_similar_blocks(
+        &mut self, 
+        b1: Option<&mut Block>, 
+        b2: Option<&mut Block>
+    ) -> Vec<u32> {
         if self.is_comboable() {
             if let Some(block1) = b1 {
                 if let Some(block2) = b2 {
                     if block1.is_comboable_with(self) && block2.is_comboable_with(self) {
-                        self.should_clear = true;
-                        block1.should_clear = true;
-                        block2.should_clear = true;
+                        return vec![
+                            self.id,
+                            block1.id,
+                            block2.id,
+                        ]
                     }
                 }
             }
         }
+
+        return vec![];
     }
 
     // returns a block neighbor with the specific type if its in the boundary
@@ -340,13 +378,13 @@ impl Block {
 
     // set counter to the time it takes to land / animate
     fn land_enter(&mut self) {
-        self.counter = self.land_anim.len() as i32;
-        self.anim_counter = self.land_anim.len();
+        self.counter = LAND_TIME;
+        self.anim_counter = LAND_TIME as usize;
     }
 
     // run down the animation
     fn land_execute(&mut self) {
-        self.anim_offset = self.land_anim[self.land_anim.len() - self.anim_counter - 1];
+        self.anim_offset = LAND_ANIM[LAND_TIME as usize - self.anim_counter - 1];
     }
 
     // once counter hits 0 change to Hang or Idle
@@ -402,6 +440,59 @@ impl Block {
         }
     }
 
+    // for safety reset the anim_counter
+    fn clear_enter(&mut self) {
+        self.anim_counter = 0;
+    }
+
+    // just animating the clearing via code
+    fn clear_execute(&mut self) {
+        if self.clear_time - self.clear_counter <= 0 && !self.clearing {
+//            self.particles.spawn = true;
+            self.clearing = true;
+            //input state vibration
+        }
+        else {
+            self.clear_counter += 1; 
+            self.clear_anim_counter += 1;
+
+            // split animations in 2 actions
+            if self.clear_anim_counter < FLASH_TIME {
+                // flashy anim
+                if self.anim_counter == 0 {
+                    self.anim_counter = 4;
+                }
+                else {
+                    self.anim_offset = FLASH_ANIM[self.anim_counter];
+                }
+            }
+            else {
+                // just the face part
+                self.anim_offset = 8;  
+            }
+        }
+    }
+
+    // simply go back to being idle
+    fn clear_counter_end(&mut self) {
+        self.change_state(States::Idle);
+    }
+
+    fn clear_exit(
+        &mut self
+    ) {
+        //TODO SET OTHERS on top to chainable
+
+        self.kind = -1;
+        self.counter = 0;
+        self.anim_offset = 0;
+
+        // clear variables 
+        self.clearing = false;
+        self.clear_counter = 0;
+        self.clear_anim_counter = 0;
+    }
+
     // change the state to a new one, call state functions that implemnent
     // enter or exit, these dont require knowledge of other blocks
     pub fn change_state(&mut self, new_state: States) {
@@ -409,6 +500,7 @@ impl Block {
             // exit functions called on old state
             match self.state {
                 States::Land => self.land_exit(),
+                States::Clear => self.clear_exit(),
                 _ => ()
             }
 
@@ -418,6 +510,7 @@ impl Block {
             match self.state {
                 States::Hang => self.hang_enter(),
                 States::Land => self.land_enter(),
+                States::Clear => self.clear_enter(),
                 _ => ()
             }
         }
@@ -443,6 +536,7 @@ impl Block {
             States::Fall => self.fall_execute(blocks),
             States::Land => self.land_execute(),
             States::Move => self.move_execute(),
+            States::Clear => self.clear_execute(),
             _ => ()
         }
 
@@ -452,9 +546,30 @@ impl Block {
                 States::Hang => self.hang_counter_end(),
                 States::Land => self.land_counter_end(blocks),
                 States::Move => self.move_counter_end(blocks),
+                States::Clear => self.clear_counter_end(),
                 _ => ()
             }
         }
+    }
+
+    // wether up and down or left and right are the same kind 
+    // all detected clears are returned in their id of the blocks 
+    // so that they can be backtracked
+    pub fn check_clear(
+        &mut self,
+        blocks: &mut JoinIter<&mut Storage<'_, Block, FetchMut<'_, MaskedStorage<Block>>>>
+    ) -> Vec<u32> {
+        let mut checks: Vec<u32> = Vec::new();
+
+        let r = self.get_neighbor(blocks, (1, 0));
+        let rr = self.get_neighbor(blocks, (2, 0));
+        let d = self.get_neighbor(blocks, (0, -1));
+        let dd = self.get_neighbor(blocks, (0, -2));
+
+        checks.append(&mut self.check_similar_blocks(r, rr)); 
+        checks.append(&mut self.check_similar_blocks(d, dd)); 
+
+        checks
     }
 }
 
