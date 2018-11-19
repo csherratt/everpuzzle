@@ -141,6 +141,13 @@ impl<'a> System<'a> for CursorSystem {
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
                 let mut search_blocks = (&mut blocks).join();
+                let mut b = search_blocks.get_unchecked(tuple2i(cursor.pos) as u32).unwrap();
+                b.swap(&mut search_blocks);
+            }
+
+            /*
+            for cursor in (cursors).join() {
+                let mut search_blocks = (&mut blocks).join();
                 let mut pos = tuple2i(cursor.pos);
 
                 let b1 = search_blocks.get_unchecked(pos as u32).unwrap();
@@ -149,7 +156,7 @@ impl<'a> System<'a> for CursorSystem {
                 let mut temp_kind = b1.kind;
                 b1.kind = b2.kind;
                 b2.kind = temp_kind;
-            }
+            }*/
         }
 
         for (sprite, transform, cursor) in (&mut sprites, &mut transforms, &mut cursors).join() {
