@@ -77,6 +77,42 @@ impl KindGenerator {
         nums
     }
 
+    // create rows defined by the size of the dimensions parameter,
+    // the generated vector will not have any numbers that match neighboring
+    // numbers
+    pub fn create_rows(&mut self, dimensions: (usize, usize)) -> Vec<i32> {
+        // empty array to destined length
+        let size: usize = dimensions.0 * dimensions.1; 
+        let mut nums: Vec<i32> = Vec::new();
+        nums.resize(size, -1);
+
+        // scoped previous number that saves the newest generated number 
+        let mut prev_before = -1;
+
+        for i in 0..size {
+            let mut new_num: i32 = 0;
+            let mut bot_num: i32 = -1; // by default -1
+
+            // set bot_num once it respects the boundaries
+            if i > COLS {
+                bot_num = nums[i - COLS];
+            }
+
+            // if the right wall is hit (after i * 6) then be true
+            if i % COLS + 1 != 0 {
+                new_num = self.get_number(prev_before, bot_num);
+            }
+            else {
+                new_num = self.get_number(-1, bot_num);
+            }
+
+            prev_before = new_num; 
+            nums[i] = new_num;
+        }
+        
+        nums
+    }
+
     // returns a randomly chosen number out of an array
     // you can erase contents inside by specifying them in the parameters
     // otherwhise theyll remain available to the chosen randomly
@@ -98,6 +134,27 @@ impl KindGenerator {
             numbers.retain(|x| x != &-1); // leave everything but -1
         }
 
+        if cond1 != -1 {
+            numbers.retain(|x| x != &cond1);
+        }
+
+        if cond2 != -1 {
+            numbers.retain(|x| x != &cond2);
+        }
+
+        return numbers[self.rng.gen_range(0, numbers.len())];
+    }
+
+    // returns a randomly chosen number out of an array
+    // you can erase contents inside by specifying them in the parameters
+    // otherwhise theyll remain available to the chosen randomly
+    fn get_number(
+        &mut self,
+        cond1: i32, 
+        cond2: i32, 
+    ) -> i32 {
+        let mut numbers: Vec<i32> = vec![-1, 0, 1, 2, 3, 4];
+       
         if cond1 != -1 {
             numbers.retain(|x| x != &cond1);
         }
