@@ -104,7 +104,7 @@ impl<'a> System<'a> for CursorSystem {
 
         if self.hold(&mut input, "down") {
             for cursor in (&mut cursors).join() {
-                if cursor.pos.1 > 0.0 {
+                if cursor.pos.1 > 1.0 {
                     cursor.pos.1 -= 1.0;
                 }
             }
@@ -132,7 +132,9 @@ impl<'a> System<'a> for CursorSystem {
             
             let mut search_blocks = (&mut blocks).join();
             for i in 0..BLOCKS {
-                search_blocks.get_unchecked(i as u32).unwrap().kind = kinds[i];
+                let mut b = search_blocks.get_unchecked(i as u32).unwrap();
+                b.reset();
+                b.kind = kinds[i];
             }
         }
 

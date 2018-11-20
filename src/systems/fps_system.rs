@@ -15,6 +15,6 @@ impl<'a> System<'a> for FPSSystem {
     fn run(&mut self, (time, mut counter): Self::SystemData) {
         counter.push(duration_to_nanos(time.delta_real_time())); 
 
-        //println!("fps: {}, sampled: {}", counter.frame_fps(), counter.sampled_fps());
+        println!("fps: {}, sampled: {}", counter.frame_fps(), counter.sampled_fps());
     }
 }

@@ -18,6 +18,7 @@ use systems::{
     block_system::BlockSystem,
     cursor_system::CursorSystem,
     fps_system::FPSSystem,
+    playfield_system::PlayfieldSystem,
 };
 use game_modes::game_mode::GameMode;
 
@@ -78,15 +79,16 @@ fn main() -> amethyst::Result<()> {
             .with_sprite_visibility_sorting(&["transform_system"])
         )?
         .with_bundle(input_bundle)?
-        .with(FPSSystem, "fps_system", &[])
-        .with(BlockSystem::new(), "block_system", &[])
+        //.with(FPSSystem, "fps_system", &[])
+        .with(BlockSystem::default(), "block_system", &[])
+        .with(PlayfieldSystem::default(), "playfield_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
     // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", app_root);
     let display_resource = DisplayConfig::load(&path);
     Application::build(assets_dir, GameMode::new(SOME_SEED, display_resource))?
-        .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 60)
+        .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(1)), 60)
         .build(game_data)?
         .run();
 

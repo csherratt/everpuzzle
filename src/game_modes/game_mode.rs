@@ -14,6 +14,7 @@ use basics::{
         load_sprite_sheet
     },
     kind_generator::KindGenerator,
+    playfield::Playfield,
 };
 
 use data::block_data::BLOCKS;
@@ -120,6 +121,13 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             .build();
 
         world.add_resource::<FPSCounter>(Default::default());
+
+        world.register::<Playfield>();
+        world.create_entity()
+            .with(Playfield::default())
+            .with(GlobalTransform::default())
+            .with(Transform::default())
+            .build();
 
         self.initialise_camera(world);
     }

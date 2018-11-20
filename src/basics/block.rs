@@ -17,7 +17,7 @@ use amethyst::{
 };
 use data::{
     helpers::tuple2i,
-    block_data::COLS,
+    block_data::{COLS, ROWS},
 };
 
 const LAND_ANIM: [usize; 10] = [2, 2, 2, 3, 3, 3, 4, 4, 4, 0];
@@ -237,11 +237,11 @@ impl Block {
         }
    
         // only visible when kind isnt null and clearing ended
-        if self.kind != -1 || self.clearing {
-            sprite.sprite_number = self.kind as usize * 9 + self.anim_offset;
+        if self.kind == -1 || self.clearing {
+            sprite.sprite_number = 8;
         }
         else {
-            sprite.sprite_number = 8;
+            sprite.sprite_number = self.kind as usize * 9 + self.anim_offset;
         }
     }
 
@@ -315,14 +315,13 @@ impl Block {
         blocks: &mut JoinIter<T>, 
         rel_pos: (i32, i32),
     ) -> Option<<T>::Type> {
-        let range = tuple2i(self.pos) as i32 + rel_pos.0 + rel_pos.1 * COLS as i32;
-    
-        if range > 0 {
-            blocks.get_unchecked(range as u32) 
+        let pos = (self.pos.0 + rel_pos.0 as f32, self.pos.1 + rel_pos.1 as f32);
+
+        if pos.0 > (COLS - 1) as f32 || pos.0 < 0.0 || pos.1 > ROWS as f32 || pos.1 < 0.0 {
+            return None;
         }
-        else {
-            None
-        }
+        
+        return blocks.get_unchecked(tuple2i(pos) as u32);
     }
 
     // only detects if this block can fall - sets the state to hang
@@ -468,21 +467,31 @@ impl Block {
             }
             else {
                 // just the face part
-                self.anim_offset = 8;  
+                self.anim_offset = 6;  
             }
         }
     }
 
     // simply go back to being idle
-    fn clear_counter_end(&mut self) {
+    fn clear_counter_end(
+        &mut self,
+        blocks: &mut JoinIter<&mut Storage<'_, Block, FetchMut<'_, MaskedStorage<Block>>>>
+    ) {
+        // set all above this block to chain and hang
+        for i in self.pos.1 as usize..ROWS {
+            let up_block = blocks.get_unchecked(tuple2i((self.pos.0, i as f32)) as u32);
+
+            if let Some(up) = up_block {
+                if up.kind != -1 && up.state == States::Idle {
+                    up.chainable = true;
+                }
+            }
+        }
+
         self.change_state(States::Idle);
     }
 
-    fn clear_exit(
-        &mut self
-    ) {
-        //TODO SET OTHERS on top to chainable
-
+    fn clear_exit(&mut self) {
         self.kind = -1;
         self.counter = 0;
         self.anim_offset = 0;
@@ -546,7 +555,7 @@ impl Block {
                 States::Hang => self.hang_counter_end(),
                 States::Land => self.land_counter_end(blocks),
                 States::Move => self.move_counter_end(blocks),
-                States::Clear => self.clear_counter_end(),
+                States::Clear => self.clear_counter_end(blocks),
                 _ => ()
             }
         }
