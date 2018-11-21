@@ -3,6 +3,7 @@ use amethyst::{
     renderer::*,
     core::{Transform, GlobalTransform, cgmath::Vector3},
     utils::fps_counter::FPSCounter,
+    ecs::prelude::Entity,
 };
 use rand::prelude::*;
 
@@ -14,11 +15,30 @@ use basics::{
         load_sprite_sheet
     },
     kind_generator::KindGenerator,
-    playfield::Playfield,
 };
 
-use data::block_data::BLOCKS;
+use data::block_data::{COLS, BLOCKS};
 use data::helpers::i2tuple;
+
+pub struct BlockStack {
+    pub entities: Vec<Entity>,
+}
+
+impl Default for BlockStack {
+    fn default() -> BlockStack {
+        BlockStack {
+            entities: Vec::new(),
+        }
+    }
+}
+
+impl BlockStack {
+    fn new(entities: Vec<Entity>) -> BlockStack {
+        BlockStack {
+            entities,
+        }
+    }
+}
 
 pub struct GameMode {
     rng_seed: [u8; 16],
@@ -34,16 +54,17 @@ impl GameMode {
     }
 
     // creates all entities with block components attached, spritesheet data with sprite_number
-    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) {
+    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) -> BlockStack {
         world.register::<Block>();
+        let mut entities = Vec::new();
 
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
             trans.scale = Vector3::new(4.0, 4.0, 4.0);
 
             // set position instantly so no weird spawn flash happens
-            let mut b = Block::new(i as u32, kinds[i], i2tuple(i));
-            b.set_position(&mut trans);
+            let (x, y) = i2tuple(i);
+            let mut b = Block::new(kinds[i], x as i32, y as i32);
 
             let sprite_render_block = SpriteRender {
                 sprite_sheet: SpriteSheetLoader::load_blocks_sprite_sheet(world),
@@ -52,13 +73,22 @@ impl GameMode {
                 flip_vertical: false,
             };
 
-            world.create_entity()
+            entities.push(world.create_entity()
                 .with(sprite_render_block)
                 .with(b)
                 .with(GlobalTransform::default())
                 .with(trans)
-                .build();
+                .build());
         }
+
+        // add all neighbors as entities
+        let mut storage = world.write_storage::<Block>();
+        for i in COLS..BLOCKS {
+            let mut b = storage.get_mut(entities[i]).unwrap();            
+            b.down = Some(entities[i - COLS]);
+        }
+
+        BlockStack::new(entities)
     }
 
     // create a camera that should have the same dimensions as the
@@ -89,7 +119,8 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         };
         let kinds = kind_gen.create_stack(5, 8);
 
-        GameMode::create_blocks(world, kinds);
+        let block_stack = GameMode::create_blocks(world, kinds);
+        world.add_resource::<BlockStack>(block_stack);
         // add the random number generator as a global resource to be used
         world.add_resource::<KindGenerator>(kind_gen);
 
@@ -121,13 +152,6 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             .build();
 
         world.add_resource::<FPSCounter>(Default::default());
-
-        world.register::<Playfield>();
-        world.create_entity()
-            .with(Playfield::default())
-            .with(GlobalTransform::default())
-            .with(Transform::default())
-            .build();
 
         self.initialise_camera(world);
     }

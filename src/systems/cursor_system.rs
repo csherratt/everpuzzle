@@ -128,6 +128,7 @@ impl<'a> System<'a> for CursorSystem {
 
         // reset all block colors to a random value
         if self.press(&mut input, "space") {
+            /*
             let kinds = kind_gen.create_stack(5, 8);
             
             let mut search_blocks = (&mut blocks).join();
@@ -135,16 +136,19 @@ impl<'a> System<'a> for CursorSystem {
                 let mut b = search_blocks.get_unchecked(i as u32).unwrap();
                 b.reset();
                 b.kind = kinds[i];
-            }
+            }*/
         }
 
         // swaps block kinds around, gets all blocks, searches through creation id,
         // id matches cursor pos conversion, swapping from one block to another block
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
+                let 
+
+                /*
                 let mut search_blocks = (&mut blocks).join();
                 let mut b = search_blocks.get_unchecked(tuple2i(cursor.pos) as u32).unwrap();
-                b.swap(&mut search_blocks);
+                b.swap(&mut search_blocks);*/
             }
         }
 
