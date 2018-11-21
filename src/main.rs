@@ -18,7 +18,6 @@ use systems::{
     block_system::BlockSystem,
     cursor_system::CursorSystem,
     fps_system::FPSSystem,
-    playfield_system::PlayfieldSystem,
 };
 use game_modes::game_mode::GameMode;
 
@@ -81,7 +80,6 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?
         //.with(FPSSystem, "fps_system", &[])
         .with(BlockSystem::default(), "block_system", &[])
-        .with(PlayfieldSystem::default(), "playfield_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"]);
 
     // set the assets dir where all sprites will be loaded from
