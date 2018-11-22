@@ -11,6 +11,8 @@ use basics::{
     kind_generator::KindGenerator
 };
 
+use game_modes::game_mode::BlockStack;
+
 use data::{
     block_data::*, 
     helpers::tuple2i
@@ -84,6 +86,8 @@ impl<'a> System<'a> for CursorSystem {
         Read<'a, InputHandler<String, String>>,
         Write<'a, KindGenerator>,
         WriteStorage<'a, Block>,
+        Read<'a, BlockStack>,
+        Entities<'a>,
     );
 
     fn run(&mut self, (
@@ -92,7 +96,10 @@ impl<'a> System<'a> for CursorSystem {
             mut cursors, 
             mut input,
             mut kind_gen,
-            mut blocks): Self::SystemData) 
+            mut blocks,
+            stack,
+            entities,
+            ): Self::SystemData) 
     {
         if self.hold(&mut input, "up") {
             for cursor in (&mut cursors).join() {
@@ -143,8 +150,13 @@ impl<'a> System<'a> for CursorSystem {
         // id matches cursor pos conversion, swapping from one block to another block
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
-                let 
+                let mut join_blocks = (&mut blocks).join();
+                let b1 = join_blocks.get(stack.entities[0], &entities).unwrap(); 
+                let b2 = join_blocks.get(stack.entities[1], &entities).unwrap(); 
 
+                let temp_kind = b1.kind;
+                b1.kind = b2.kind;
+                b2.kind = temp_kind;
                 /*
                 let mut search_blocks = (&mut blocks).join();
                 let mut b = search_blocks.get_unchecked(tuple2i(cursor.pos) as u32).unwrap();
