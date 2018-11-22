@@ -21,6 +21,9 @@ use systems::{
 };
 use game_modes::game_mode::GameMode;
 
+// static seed for rand crate that can be used to have the same rand seed - good for debugging
+const SOME_SEED: [u8; 16] = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
 fn main() -> amethyst::Result<()> {
     // log only warnings to create less logs
     let mut log = amethyst::LoggerConfig::default();
@@ -47,9 +50,6 @@ fn main() -> amethyst::Result<()> {
                 Some(DepthMode::LessEqualWrite),
             ))
     );
-
-    // static seed for rand crate that can be used to have the same rand seed - good for debugging
-    const SOME_SEED: [u8; 16] = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
     // create some randomized seed to be shared
     let mut rand_seed: [u8; 16] = [0; 16];
@@ -85,7 +85,7 @@ fn main() -> amethyst::Result<()> {
     // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", app_root);
     let display_resource = DisplayConfig::load(&path);
-    Application::build(assets_dir, GameMode::new(SOME_SEED, display_resource))?
+    Application::build(assets_dir, GameMode::new(rand_seed, display_resource))?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(1)), 60)
         .build(game_data)?
         .run();
