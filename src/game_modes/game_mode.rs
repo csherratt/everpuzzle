@@ -9,37 +9,17 @@ use rand::prelude::*;
 
 use basics::{
     block::Block,
-    fsm::FSM,
     cursor::Cursor,
     spritesheet_loader::{
         SpriteSheetLoader,
         load_sprite_sheet
     },
     kind_generator::KindGenerator,
+    stack::Stack,
 };
 
 use data::block_data::{COLS, BLOCKS};
 use data::helpers::i2tuple;
-
-pub struct BlockStack {
-    pub entities: Vec<Entity>,
-}
-
-impl Default for BlockStack {
-    fn default() -> BlockStack {
-        BlockStack {
-            entities: Vec::new(),
-        }
-    }
-}
-
-impl BlockStack {
-    fn new(entities: Vec<Entity>) -> BlockStack {
-        BlockStack {
-            entities,
-        }
-    }
-}
 
 pub struct GameMode {
     rng_seed: [u8; 16],
@@ -55,7 +35,7 @@ impl GameMode {
     }
 
     // creates all entities with block components attached, spritesheet data with sprite_number
-    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) -> BlockStack {
+    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) -> Stack {
         world.register::<Block>();
         let mut entities = Vec::new();
 
@@ -77,7 +57,6 @@ impl GameMode {
             entities.push(world.create_entity()
                 .with(sprite_render_block)
                 .with(b)
-                .with(FSM::default())
                 .with(GlobalTransform::default())
                 .with(trans)
                 .build());
@@ -90,7 +69,7 @@ impl GameMode {
             b.down = Some(entities[i - COLS]);
         }
 
-        BlockStack::new(entities)
+        Stack::new(entities)
     }
 
     // create a camera that should have the same dimensions as the
@@ -122,7 +101,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         let kinds = kind_gen.create_stack(5, 8);
 
         let block_stack = GameMode::create_blocks(world, kinds);
-        world.add_resource::<BlockStack>(block_stack);
+        world.add_resource::<Stack>(block_stack);
         // add the random number generator as a global resource to be used
         world.add_resource::<KindGenerator>(kind_gen);
 

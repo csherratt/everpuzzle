@@ -1,14 +1,13 @@
 use amethyst::{
-    ecs::{
-        *, 
-        join::{Join, JoinIter},
-    },
+    ecs::*,
     renderer::*,
     core::Transform,
 };
 
-use basics::block::{Block, States};
-use game_modes::game_mode::BlockStack;
+use basics::{
+    block::Block,
+    stack::Stack,
+};
 use data::block_data::BLOCKS;
 
 pub struct BlockSystem {
@@ -28,28 +27,32 @@ impl<'a> System<'a> for BlockSystem {
         WriteStorage<'a, SpriteRender>,
         WriteStorage<'a, Transform>,
         WriteStorage<'a, Block>,
-        Entities<'a>,
-        Read<'a, BlockStack>,
+        Read<'a, Stack>,
     );
 
     fn run(&mut self, (
             mut sprites, 
             mut transforms, 
             mut blocks,
-            entities,
             stack
             ): Self::SystemData)
     {
+        for entity in &stack.entities {
+            let b = (&mut blocks).get_mut(*entity).unwrap();
+        }
+
         // translation
         for (block, transform) in (&blocks, &mut transforms).join() {
             transform.translation.x = block.x as f32 * transform.scale.x * 16.0;
             transform.translation.y = block.y as f32 * transform.scale.y * 16.0;
         }
 
+        // rendering
         for (block, sprite) in (&blocks, &mut sprites).join() {
             BlockSystem::update_sprites(block, sprite);
         }
 
+        /*
         let mut join_blocks = (&mut blocks).join();
         for e in &stack.entities {
             let top = join_blocks.get(*e, &entities).unwrap();
@@ -61,8 +64,9 @@ impl<'a> System<'a> for BlockSystem {
                     top.can_fall = true;
                 }
             }
-        }
+        }*/
 
+        /*
         for e in &stack.entities {
             let top = join_blocks.get(*e, &entities).unwrap();
             
@@ -74,7 +78,14 @@ impl<'a> System<'a> for BlockSystem {
                     top.kind = -1;
                 }
             }
-        }
+        }*/
+    }
+}
+
+struct Testing;
+impl Testing {
+    fn update_state(b: &mut Block, blocks: &mut WriteStorage<'_, Block>) {
+
     }
 }
 

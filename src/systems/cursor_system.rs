@@ -8,10 +8,9 @@ use amethyst::{
 use basics::{
     block::Block,
     cursor::Cursor,
-    kind_generator::KindGenerator
+    kind_generator::KindGenerator,
+    stack::Stack,
 };
-
-use game_modes::game_mode::BlockStack;
 
 use data::{
     block_data::*, 
@@ -86,8 +85,7 @@ impl<'a> System<'a> for CursorSystem {
         Read<'a, InputHandler<String, String>>,
         Write<'a, KindGenerator>,
         WriteStorage<'a, Block>,
-        Read<'a, BlockStack>,
-        Entities<'a>,
+        Read<'a, Stack>,
     );
 
     fn run(&mut self, (
@@ -98,7 +96,6 @@ impl<'a> System<'a> for CursorSystem {
             mut kind_gen,
             mut blocks,
             stack,
-            entities,
             ): Self::SystemData) 
     {
         if self.hold(&mut input, "up") {
@@ -135,28 +132,24 @@ impl<'a> System<'a> for CursorSystem {
 
         // reset all block colors to a random value
         if self.press(&mut input, "space") {
-            /*
             let kinds = kind_gen.create_stack(5, 8);
             
-            let mut search_blocks = (&mut blocks).join();
-            for i in 0..BLOCKS {
-                let mut b = search_blocks.get_unchecked(i as u32).unwrap();
-                b.reset();
-                b.kind = kinds[i];
-            }*/
+            let mut i = 0; 
+            for entity in &stack.entities {
+                (&mut blocks).get_mut(*entity).unwrap().kind = kinds[i];
+                i += 1;
+            }
         }
 
         // swaps block kinds around, gets all blocks, searches through creation id,
         // id matches cursor pos conversion, swapping from one block to another block
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
-                let mut join_blocks = (&mut blocks).join();
-                let b1 = join_blocks.get(stack.entities[0], &entities).unwrap(); 
-                let b2 = join_blocks.get(stack.entities[1], &entities).unwrap(); 
+                let pos = tuple2i(cursor.pos);
 
-                let temp_kind = b1.kind;
-                b1.kind = b2.kind;
-                b2.kind = temp_kind;
+                let b1 = (&mut blocks).get_mut(stack.entities[pos]).unwrap(); 
+                CursorSystem::swap(b1, &mut blocks);
+
                 /*
                 let mut search_blocks = (&mut blocks).join();
                 let mut b = search_blocks.get_unchecked(tuple2i(cursor.pos) as u32).unwrap();
@@ -174,6 +167,18 @@ impl<'a> System<'a> for CursorSystem {
             else {
                 cursor.anim_offset = 0.0;
             }
+        }
+    }
+}
+
+impl CursorSystem {
+    fn swap(b: &mut Block, blocks: &mut WriteStorage<'_, Block>) {
+        if let Some(down) = b.down {
+            let other = (&mut blocks).get_mut(down).unwrap();
+
+            let temp = b.kind; 
+            b.kind = other.kind;
+            other.kind = temp;
         }
     }
 }
