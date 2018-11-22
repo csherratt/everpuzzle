@@ -37,6 +37,7 @@ pub struct Block {
     pub y: i32,
     pub down: Option<Entity>,
     pub can_fall: bool,
+    pub state: States,
 }
 
 impl Default for Block {
@@ -47,19 +48,14 @@ impl Default for Block {
             y: 0,
             down: None,
             can_fall: false,
+            state: States::Idle,
         }
     }
 }
 
 impl Block {
     pub fn new(kind: i32, x: i32, y: i32) -> Block {
-        Block {
-            kind, 
-            x, 
-            y,
-            down: None,
-            can_fall: false,
-        }
+        Block { kind, x, y, ..Default::default() }
     }
 }
 
