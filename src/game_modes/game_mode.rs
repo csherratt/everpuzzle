@@ -9,6 +9,7 @@ use rand::prelude::*;
 
 use basics::{
     block::Block,
+    fsm::FSM,
     cursor::Cursor,
     spritesheet_loader::{
         SpriteSheetLoader,
@@ -76,6 +77,7 @@ impl GameMode {
             entities.push(world.create_entity()
                 .with(sprite_render_block)
                 .with(b)
+                .with(FSM::default())
                 .with(GlobalTransform::default())
                 .with(trans)
                 .build());
