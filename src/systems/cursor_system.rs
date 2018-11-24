@@ -134,10 +134,8 @@ impl<'a> System<'a> for CursorSystem {
         if self.press(&mut input, "space") {
             let kinds = kind_gen.create_stack(5, 8);
             
-            let mut i = 0; 
-            for entity in &stack.entities {
-                (&mut blocks).get_mut(*entity).unwrap().kind = kinds[i];
-                i += 1;
+            for i in 0..BLOCKS {
+                blocks.get_mut(stack.entities[i]).unwrap().kind = kinds[i];
             }
         }
 
@@ -147,13 +145,9 @@ impl<'a> System<'a> for CursorSystem {
             for cursor in (cursors).join() {
                 let pos = tuple2i(cursor.pos);
 
-                let b1 = (&mut blocks).get_mut(stack.entities[pos]).unwrap(); 
-                CursorSystem::swap(b1, &mut blocks);
-
-                /*
-                let mut search_blocks = (&mut blocks).join();
-                let mut b = search_blocks.get_unchecked(tuple2i(cursor.pos) as u32).unwrap();
-                b.swap(&mut search_blocks);*/
+                let temp_kind: i32 = blocks.get_mut(stack.entities[pos]).unwrap().kind; 
+                blocks.get_mut(stack.entities[pos]).unwrap().kind = blocks.get(stack.entities[pos + 1]).unwrap().kind;
+                blocks.get_mut(stack.entities[pos + 1]).unwrap().kind = temp_kind;
             }
         }
 
@@ -171,6 +165,7 @@ impl<'a> System<'a> for CursorSystem {
     }
 }
 
+/*
 impl CursorSystem {
     fn swap(b: &mut Block, blocks: &mut WriteStorage<'_, Block>) {
         if let Some(down) = b.down {
@@ -181,4 +176,4 @@ impl CursorSystem {
             other.kind = temp;
         }
     }
-}
+}*/
