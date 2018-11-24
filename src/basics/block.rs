@@ -1,43 +1,21 @@
-#![allow(dead_code)]
-use amethyst::{
-    ecs::{
-        prelude::{
-            Entity,
-            Component, 
-            DenseVecStorage
-        }, 
-    },
-    core::Transform,
-    renderer::SpriteRender,
-};
-use data::{
-    helpers::tuple2i,
-    block_data::{COLS, ROWS},
-};
+#![allow(dead_code, unused_imports)]
+use amethyst::ecs::prelude::{Component, DenseVecStorage};
+use std::marker::Copy;
+use std::clone::Clone;
 
-const LAND_ANIM: [usize; 10] = [2, 2, 2, 3, 3, 3, 4, 4, 4, 0];
-const LAND_TIME: i32 = 10;
 const FLASH_ANIM: [usize; 4] = [6, 6, 0, 0];
 const FLASH_TIME: i32 = 44; 
 
-// All states a blocks can be in
-#[derive(PartialEq, Clone)]
-pub enum States {
-    Idle,
-    Hang,
-    Fall,
-    Land,
-    Move,
-    Clear,
-}
-
+#[derive(Copy, Clone)]
 pub struct Block {
     pub kind: i32, // sprite_number or -1
     pub x: i32,
     pub y: i32,
-    pub down: Option<Entity>,
-    pub can_fall: bool,
-    pub state: States,
+    pub state: &'static str,
+    pub counter: u32,
+    pub chainable: bool,
+    pub anim_counter: u32,
+    pub anim_offset: u32,
 }
 
 impl Default for Block {
@@ -46,9 +24,11 @@ impl Default for Block {
             kind: 0,
             x: 0,
             y: 0,
-            down: None,
-            can_fall: false,
-            state: States::Idle,
+            state: "IDLE",
+            counter: 0,
+            chainable: false,
+            anim_counter: 0,
+            anim_offset: 0,
         }
     }
 }
@@ -56,6 +36,20 @@ impl Default for Block {
 impl Block {
     pub fn new(kind: i32, x: i32, y: i32) -> Block {
         Block { kind, x, y, ..Default::default() }
+    }
+
+    pub fn is_empty(&mut self) -> bool {
+        self.kind == -1 && self.state == "IDLE"
+    }
+
+    pub fn get_properties(&mut self, other: Block) {
+        self.kind = other.kind;
+        self.state = other.state;
+    }
+
+    pub fn reset(&mut self) {
+        self.kind = -1; 
+        self.state = "IDLE";
     }
 }
 

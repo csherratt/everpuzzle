@@ -9,16 +9,16 @@ use rand::prelude::*;
 
 use basics::{
     block::Block,
+    stack::Stack,
     cursor::Cursor,
     spritesheet_loader::{
         SpriteSheetLoader,
         load_sprite_sheet
     },
     kind_generator::KindGenerator,
-    stack::Stack,
 };
 
-use data::block_data::{COLS, BLOCKS};
+use data::block_data::BLOCKS;
 use data::helpers::i2tuple;
 
 pub struct GameMode {
@@ -37,7 +37,7 @@ impl GameMode {
     // creates all entities with block components attached, spritesheet data with sprite_number
     pub fn create_blocks(world: &mut World, kinds: Vec<i32>) -> Stack {
         world.register::<Block>();
-        let mut entities = Vec::new();
+        let mut entities: Vec<Entity> = Vec::new();
 
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
@@ -62,14 +62,7 @@ impl GameMode {
                 .build());
         }
 
-        // add all neighbors as entities
-        let mut storage = world.write_storage::<Block>();
-        for i in COLS..BLOCKS {
-            let mut b = storage.get_mut(entities[i]).unwrap();            
-            b.down = Some(entities[i - COLS]);
-        }
-
-        Stack::new(entities)
+        Stack::new(entities) 
     }
 
     // create a camera that should have the same dimensions as the

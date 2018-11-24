@@ -1,8 +1,7 @@
-use amethyst::ecs::Entity;
+use amethyst::ecs::prelude::*;
 
-// A resource holding all block entities, used to go through entities later on
 pub struct Stack {
-	pub entities: Vec<Entity>
+	pub entities: Vec<Entity>,
 }
 
 impl Default for Stack {
@@ -16,8 +15,8 @@ impl Default for Stack {
 impl Stack {
 	pub fn new(entities: Vec<Entity>) -> Stack {
 		Stack {
-			entities
+			entities,
+			..Default::default()
 		}
 	}
 }
-

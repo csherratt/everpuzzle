@@ -14,10 +14,10 @@ mod data;
 mod basics;
 mod game_modes;
 mod systems;
+mod block_states;
 use systems::{
     block_system::BlockSystem,
     cursor_system::CursorSystem,
-    fps_system::FPSSystem,
 };
 use game_modes::game_mode::GameMode;
 

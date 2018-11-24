@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use rand::prelude::*;
 use data::block_data::{
     COLS, 
