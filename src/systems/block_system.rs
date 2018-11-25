@@ -26,6 +26,7 @@ impl<'a> System<'a> for BlockSystem {
         WriteStorage<'a, SpriteRender>,
         WriteStorage<'a, Transform>,
         WriteStorage<'a, Block>,
+        WriteStorage<'a, Hidden>,
         Read<'a, Stack>,
     );
 
@@ -33,6 +34,7 @@ impl<'a> System<'a> for BlockSystem {
             mut sprites, 
             mut transforms, 
             mut blocks,
+            mut hiddens,
             stack,
             ): Self::SystemData)
     {
@@ -77,32 +79,49 @@ impl<'a> System<'a> for BlockSystem {
         }
 
         // rendering
-        for (b, sprite) in (&mut blocks, &mut sprites).join() {
-            update_sprites(b, sprite);
-        }
+        update_sprites(
+            &stack.entities, 
+            &mut blocks,
+            &mut sprites,
+            &mut hiddens,
+        );
     }
 }
 
 // visibility is on when the blocks kind isnt -1
 // also sets the frame of the sprite by its kind * 9 and an additional 
 // animation offset used to stay at specific horizontal sprites
-fn update_sprites(b: &mut Block, sprite: &mut SpriteRender) {
-    // decrease all the time
-    if b.anim_counter > 0 {
-        b.anim_counter -= 1;
-    }
+fn update_sprites(
+    entities: &Vec<Entity>, 
+    blocks: &mut WriteStorage<'_, Block>,
+    sprites: &mut WriteStorage<'_, SpriteRender>,
+    hiddens: &mut WriteStorage<'_, Hidden>) {
+    for i in 0..BLOCKS {
+        let b = blocks.get_mut(entities[i]).unwrap();
+        let sprite = sprites.get_mut(entities[i]).unwrap();
 
-    // render sprite with kind when its not -1
-    if b.kind != -1 && !b.clearing {
-        if b.y == 0 {
-            b.anim_offset = 1;
+        // decrease all the time
+        if b.anim_counter > 0 {
+            b.anim_counter -= 1;
         }
 
-        sprite.sprite_number = b.kind as usize * 9 + b.anim_offset as usize;
-    }
-    else {
-        // static 0 alpha sprite rectangle
-        sprite.sprite_number = 8;
+        // render sprite with kind when its not -1
+        if b.kind != -1 && !b.clearing {
+            if hiddens.contains(entities[i]) {
+                hiddens.remove(entities[i]);
+            }
+
+            if b.y == 0 {
+                b.anim_offset = 1;
+            }
+
+            sprite.sprite_number = b.kind as usize * 8 + b.anim_offset as usize;
+        }
+        else {
+            if !hiddens.contains(entities[i]) {
+                hiddens.insert(entities[i], Hidden::default());
+            }
+        }
     }
 }
 
