@@ -33,7 +33,7 @@ impl SpriteSheetLoader {
         world.write_resource::<MaterialTextureSet>()
             .insert(texture_id, texture_handle);
 
-        const SPRITESHEET_SIZE: (f32, f32) = (144.0, 144.0);
+        const SPRITESHEET_SIZE: (f32, f32) = (128.0, 144.0);
 
         // Create the sprite for the paddles.
         //
@@ -45,7 +45,7 @@ impl SpriteSheetLoader {
         // the value by subtracting the pixel proportion from 1.0.
         let mut all_sprites: Vec<Sprite> = Vec::new();
         for y in 0..9 {
-            for x in 0..9 {
+            for x in 0..8 {
                 all_sprites.push(Sprite {
                     width: 16.0,
                     height: 16.0,

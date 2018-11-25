@@ -6,7 +6,7 @@ use block_states::land::LAND_TIME;
 
 #[derive(Copy, Clone)]
 pub struct Block {
-    pub kind: i32, // sprite_number or -1
+    pub kind: i32, // sprite_number or -1 meaning invisible
     pub id: u32, 
     pub x: i32,
     pub y: i32,
