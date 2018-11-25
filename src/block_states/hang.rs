@@ -1,6 +1,7 @@
 #![allow(unused_variables)]
-use amethyst::ecs::prelude::{WriteStorage, Entity};
+use amethyst::ecs::prelude::WriteStorage;
 use basics::block::Block;
+use basics::stack::Stack;
 use block_states::block_state::{BlockState, change_state};
 
 pub struct Hang;
@@ -10,9 +11,9 @@ impl BlockState for Hang {
     }
 
     fn exit(b: &mut Block) {}
-    fn execute(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {}
+    fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {}
 
-    fn counter_end(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
-        change_state(blocks.get_mut(entities[i]).unwrap(), "FALL");
+    fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
+        change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "FALL");
     }
 }

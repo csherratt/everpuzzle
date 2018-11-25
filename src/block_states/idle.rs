@@ -1,8 +1,8 @@
 #![allow(unused_variables)]
-use amethyst::ecs::prelude::{WriteStorage, Entity};
+use amethyst::ecs::prelude::WriteStorage;
 use basics::block::Block;
+use basics::stack::Stack;
 use block_states::block_state::{BlockState, change_state};
-use data::block_data::COLS;
 use systems::block_system::check_for_hang;
 
 // only detects if this block can fall and sets the state to hang
@@ -12,13 +12,13 @@ impl BlockState for Idle {
     fn enter(b: &mut Block) {}
     fn exit(b: &mut Block) {}
 
-    fn execute(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
+    fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
         let can_hang: bool = {
-            check_for_hang(i, entities, blocks)
+            check_for_hang(i, stack, blocks)
         };
 
         // change the block to state if it isnt empty and the block below is empty / or falling
-        let b = blocks.get_mut(entities[i]).unwrap();
+        let b = blocks.get_mut(stack.from_i(i)).unwrap();
         if can_hang {
             change_state(b, "HANG");
         }
@@ -27,5 +27,5 @@ impl BlockState for Idle {
         }
     }
 
-    fn counter_end(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {}
+    fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {}
 }

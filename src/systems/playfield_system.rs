@@ -4,15 +4,7 @@ use basics::{
 	stack::Stack,
 };
 use block_states::block_state::change_state;
-
-use data::{
-	block_data::{
-		BLOCKS,
-		COLS,
-		ROWS,
-	},
-	helpers::{tuple2i, i2tuple},
-};
+use data::block_data::{BLOCKS, COLS, ROWS};
 
 pub struct PlayfieldSystem {
 	clear_queue: Vec<u32>,
@@ -35,61 +27,63 @@ impl Default for PlayfieldSystem {
 impl<'a> System<'a> for PlayfieldSystem {
     type SystemData = (
 		WriteStorage<'a, Block>,
-		Read<'a, Stack>,
+		ReadStorage<'a, Stack>,
     );
 
-    fn run(&mut self, (mut blocks, stack): Self::SystemData) {
-		for x in 0..COLS {
-			for y in 0..ROWS {
-				for clear_block_id in check_clear(x, y, &stack.entities, &blocks) {
-					if !self.clear_queue.contains(&clear_block_id) {
-						self.clear_queue.push(clear_block_id);
+    fn run(&mut self, (mut blocks, stacks): Self::SystemData) {
+		for stack in (&stacks).join() {
+			for x in 0..COLS {
+				for y in 0..ROWS {
+					for clear_block_id in check_clear(x, y, &stack, &blocks) {
+						if !self.clear_queue.contains(&clear_block_id) {
+							self.clear_queue.push(clear_block_id);
+						}
 					}
 				}
 			}
-		}
 
-		// if no clears were found, dont go through all
-		let clear_size = self.clear_queue.len() as i32;
-		if clear_size != 0 {
-			self.combo_counter = 0;
+			// if no clears were found, dont go through all
+			let clear_size = self.clear_queue.len() as i32;
+			if clear_size != 0 {
+				self.combo_counter = 0;
 
-			// animation times, TODO: get playfield level dependant times
-			let flash: i32 = 44;
-			let face: i32 = 10;
-			let pop: i32 = 10;
+				// animation times, TODO: get playfield level dependant times
+				let flash: i32 = 44;
+				let face: i32 = 10;
+				let pop: i32 = 10;
 
-			let all_time = flash + face + pop * clear_size;
+				let all_time = flash + face + pop * clear_size;
 
-			// set all animation times and general time it will take all blocks that are 
-			// comboing to finish their animation
-			for id in &self.clear_queue {
-				let b = blocks.get_mut(stack.entities[*id as usize]).unwrap();
-				let set_time = flash + face + pop * self.combo_counter;
-				b.clear_time = set_time;
-				self.combo_counter += 1;
+				// set all animation times and general time it will take all blocks that are 
+				// comboing to finish their animation
+				for id in &self.clear_queue {
+					let b = blocks.get_mut(stack.from_i(*id as usize)).unwrap();
+					let set_time = flash + face + pop * self.combo_counter;
+					b.clear_time = set_time;
+					self.combo_counter += 1;
 
-				b.counter = all_time as u32;
-				b.clear_start_counter = all_time;
-				change_state(b, "CLEAR");
+					b.counter = all_time as u32;
+					b.clear_start_counter = all_time;
+					change_state(b, "CLEAR");
+				}
 			}
-		}
-		 
-		// clear the clear_queue if its not empty 
-		if self.clear_queue.len() != 0 {
-			println!("{:?}", self.clear_queue);
-			self.clear_queue.clear();
+			
+			// clear the clear_queue if its not empty 
+			if self.clear_queue.len() != 0 {
+				println!("{:?}", self.clear_queue);
+				self.clear_queue.clear();
+			}
 		}
 	}
 }
 
 // checks through eachs block right, right_right and up, up_up to see if they are performing a combo
 // returns an array of block ids to identify them
-fn check_clear(x: usize, y: usize, entities: &Vec<Entity>, blocks: &WriteStorage<'_, Block>) -> Vec<u32> {
+fn check_clear(x: usize, y: usize, stack: &Stack, blocks: &WriteStorage<'_, Block>) -> Vec<u32> {
 	let mut checks: Vec<u32> = Vec::new();
 
-	let r_rr = check_similar_block(x, y, 1, 0, entities, blocks);
-	let u_uu = check_similar_block(x, y, 0, 1, entities, blocks);
+	let r_rr = check_similar_block(x, y, 1, 0, stack, blocks);
+	let u_uu = check_similar_block(x, y, 0, 1, stack, blocks);
 
 	if let Some(mut right_vec) = r_rr {
 		checks.append(&mut right_vec);
@@ -109,14 +103,14 @@ fn check_clear(x: usize, y: usize, entities: &Vec<Entity>, blocks: &WriteStorage
 fn check_similar_block(
 	x: usize, y: usize,
 	x_offset: usize, y_offset: usize,
-	entities: &Vec<Entity>, 
+	stack: &Stack, 
 	blocks: &WriteStorage<'_, Block>
 ) -> Option<Vec<u32>> {
-	let b1 = blocks.get(entities[tuple2i((x as f32, y as f32))]).unwrap();
+	let b1 = blocks.get(stack.from_xy(x, y)).unwrap();
 
 	let check_boundary = |x: usize, y: usize| -> Option<&Block> {
 		if x < COLS && y < ROWS {
-			blocks.get(entities[tuple2i((x as f32, y as f32))])
+			blocks.get(stack.from_xy(x, y))
 		}
 		else {
 			None

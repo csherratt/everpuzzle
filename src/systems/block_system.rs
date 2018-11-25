@@ -23,68 +23,71 @@ use block_states::{
 pub struct BlockSystem;
 impl<'a> System<'a> for BlockSystem {
     type SystemData = (
+        ReadStorage<'a, Stack>,
         WriteStorage<'a, SpriteRender>,
         WriteStorage<'a, Transform>,
         WriteStorage<'a, Block>,
         WriteStorage<'a, Hidden>,
-        Read<'a, Stack>,
     );
 
     fn run(&mut self, (
+            stacks,
             mut sprites, 
             mut transforms, 
             mut blocks,
             mut hiddens,
-            stack,
             ): Self::SystemData)
     {
-        // run through all states from a block
-        for i in 0..BLOCKS {
-            // decrease the counter if its over 0
-            {
-                let mut b = blocks.get_mut(stack.entities[i]).unwrap();
-                
-                if b.counter > 0 {
-                    b.counter -= 1;
-                }
-            } 
+        // run through all existing block stacks
+        for stack in (&stacks).join() {
+            // run through all states from a block
+            for i in 0..BLOCKS {
+                // decrease the counter if its over 0
+                {
+                    let mut b = blocks.get_mut(stack.from_i(i)).unwrap();
+                    
+                    if b.counter > 0 {
+                        b.counter -= 1;
+                    }
+                } 
 
-            // match all on the blocks state - run all execute functions
-            match blocks.get(stack.entities[i]).unwrap().state {
-                "IDLE" => Idle::execute(i, &stack.entities, &mut blocks),
-                "FALL" => Fall::execute(i, &stack.entities, &mut blocks),
-                "LAND" => Land::execute(i, &stack.entities, &mut blocks),
-                "CLEAR" => Clear::execute(i, &stack.entities, &mut blocks),
-                "SWAP" => Swap::execute(i, &stack.entities, &mut blocks),
-                _ => ()
-            }
-
-            // if the counter is at 0, call current states counter end function
-            if blocks.get(stack.entities[i]).unwrap().counter <= 0 {
-                match blocks.get(stack.entities[i]).unwrap().state {
-                    "HANG" => Hang::counter_end(i, &stack.entities, &mut blocks),
-                    "FALL" => Fall::counter_end(i, &stack.entities, &mut blocks),
-                    "LAND" => Land::counter_end(i, &stack.entities, &mut blocks),
-                    "CLEAR" => Clear::counter_end(i, &stack.entities, &mut blocks),
-                    "SWAP" => Swap::counter_end(i, &stack.entities, &mut blocks),
+                // match all on the blocks state - run all execute functions
+                match blocks.get(stack.from_i(i)).unwrap().state {
+                    "IDLE" => Idle::execute(i, &stack, &mut blocks),
+                    "FALL" => Fall::execute(i, &stack, &mut blocks),
+                    "LAND" => Land::execute(i, &stack, &mut blocks),
+                    "CLEAR" => Clear::execute(i, &stack, &mut blocks),
+                    "SWAP" => Swap::execute(i, &stack, &mut blocks),
                     _ => ()
-                }    
+                }
+
+                // if the counter is at 0, call current states counter end function
+                if blocks.get(stack.from_i(i)).unwrap().counter <= 0 {
+                    match blocks.get(stack.from_i(i)).unwrap().state {
+                        "HANG" => Hang::counter_end(i, &stack, &mut blocks),
+                        "FALL" => Fall::counter_end(i, &stack, &mut blocks),
+                        "LAND" => Land::counter_end(i, &stack, &mut blocks),
+                        "CLEAR" => Clear::counter_end(i, &stack, &mut blocks),
+                        "SWAP" => Swap::counter_end(i, &stack, &mut blocks),
+                        _ => ()
+                    }    
+                }
             }
-        }
 
-        // translation
-        for (b, transform) in (&blocks, &mut transforms).join() {
-            transform.translation.x = b.x as f32 * transform.scale.x * 16.0 + b.offset.0;
-            transform.translation.y = b.y as f32 * transform.scale.y * 16.0 + b.offset.1;
-        }
+            // translation
+            for (b, transform) in (&blocks, &mut transforms).join() {
+                transform.translation.x = b.x as f32 * transform.scale.x * 16.0 + b.offset.0;
+                transform.translation.y = b.y as f32 * transform.scale.y * 16.0 + b.offset.1;
+            }
 
-        // rendering
-        update_sprites(
-            &stack.entities, 
-            &mut blocks,
-            &mut sprites,
-            &mut hiddens,
-        );
+            // rendering
+            update_sprites(
+                &stack, 
+                &mut blocks,
+                &mut sprites,
+                &mut hiddens,
+            );
+        }
     }
 }
 
@@ -92,13 +95,12 @@ impl<'a> System<'a> for BlockSystem {
 // also sets the frame of the sprite by its kind * 9 and an additional 
 // animation offset used to stay at specific horizontal sprites
 fn update_sprites(
-    entities: &Vec<Entity>, 
+    stack: &Stack, 
     blocks: &mut WriteStorage<'_, Block>,
     sprites: &mut WriteStorage<'_, SpriteRender>,
     hiddens: &mut WriteStorage<'_, Hidden>) {
     for i in 0..BLOCKS {
-        let b = blocks.get_mut(entities[i]).unwrap();
-        let sprite = sprites.get_mut(entities[i]).unwrap();
+        let b = blocks.get_mut(stack.from_i(i)).unwrap();
 
         // decrease all the time
         if b.anim_counter > 0 {
@@ -107,34 +109,34 @@ fn update_sprites(
 
         // render sprite with kind when its not -1
         if b.kind != -1 && !b.clearing {
-            if hiddens.contains(entities[i]) {
-                hiddens.remove(entities[i]);
+            if hiddens.contains(stack.from_i(i)) {
+                hiddens.remove(stack.from_i(i));
             }
 
             if b.y == 0 {
                 b.anim_offset = 1;
             }
 
-            sprite.sprite_number = b.kind as usize * 8 + b.anim_offset as usize;
+            sprites.get_mut(stack.from_i(i)).unwrap().sprite_number = b.kind as usize * 8 + b.anim_offset as usize;
         }
         else {
-            if !hiddens.contains(entities[i]) {
-                hiddens.insert(entities[i], Hidden::default());
+            if !hiddens.contains(stack.from_i(i)) {
+                hiddens.insert(stack.from_i(i), Hidden::default()).expect("add hide component");
             }
         }
     }
 }
 
 // checks wether the block below is empty or falling, also checks wether this block is empty
-pub fn check_for_hang(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) -> bool {
+pub fn check_for_hang(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) -> bool {
     // condition based on another block in a different lifetime
     let mut down_condition: bool = false;
 
     // check if is in vec boundary
     if i > COLS {
-        let down = blocks.get_mut(entities[i - COLS]).unwrap();
+        let down = blocks.get_mut(stack.from_i(i - COLS)).unwrap();
         down_condition = down.is_empty() || down.state == "HANG";
     }
 
-    !blocks.get_mut(entities[i]).unwrap().is_empty() && down_condition
+    !blocks.get_mut(stack.from_i(i)).unwrap().is_empty() && down_condition
 }
