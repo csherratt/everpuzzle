@@ -8,27 +8,19 @@ use basics::{
     block::Block,
     stack::Stack,
 };
-use data::block_data::BLOCKS;
+use data::block_data::{COLS, BLOCKS};
 use block_states::{
+    block_state::BlockState,
     idle::Idle,
     hang::Hang,
     fall::Fall,
     land::Land,
-    block_state::BlockState,
+    clear::Clear,
+    swap::Swap,
 };
 
-pub struct BlockSystem {
-
-}
-
-impl Default for BlockSystem {
-    fn default() -> BlockSystem {
-        BlockSystem {
-
-        }
-    }
-}
-
+// handles everything a block should do itself or based on others
+pub struct BlockSystem;
 impl<'a> System<'a> for BlockSystem {
     type SystemData = (
         WriteStorage<'a, SpriteRender>,
@@ -60,6 +52,8 @@ impl<'a> System<'a> for BlockSystem {
                 "IDLE" => Idle::execute(i, &stack.entities, &mut blocks),
                 "FALL" => Fall::execute(i, &stack.entities, &mut blocks),
                 "LAND" => Land::execute(i, &stack.entities, &mut blocks),
+                "CLEAR" => Clear::execute(i, &stack.entities, &mut blocks),
+                "SWAP" => Swap::execute(i, &stack.entities, &mut blocks),
                 _ => ()
             }
 
@@ -69,45 +63,57 @@ impl<'a> System<'a> for BlockSystem {
                     "HANG" => Hang::counter_end(i, &stack.entities, &mut blocks),
                     "FALL" => Fall::counter_end(i, &stack.entities, &mut blocks),
                     "LAND" => Land::counter_end(i, &stack.entities, &mut blocks),
+                    "CLEAR" => Clear::counter_end(i, &stack.entities, &mut blocks),
+                    "SWAP" => Swap::counter_end(i, &stack.entities, &mut blocks),
                     _ => ()
                 }    
             }
         }
 
         // translation
-        for (block, transform) in (&blocks, &mut transforms).join() {
-            transform.translation.x = block.x as f32 * transform.scale.x * 16.0;
-            transform.translation.y = block.y as f32 * transform.scale.y * 16.0;
+        for (b, transform) in (&blocks, &mut transforms).join() {
+            transform.translation.x = b.x as f32 * transform.scale.x * 16.0 + b.offset.0;
+            transform.translation.y = b.y as f32 * transform.scale.y * 16.0 + b.offset.1;
         }
 
         // rendering
-        for (block, sprite) in (&mut blocks, &mut sprites).join() {
-            BlockSystem::update_sprites(block, sprite);
+        for (b, sprite) in (&mut blocks, &mut sprites).join() {
+            update_sprites(b, sprite);
         }
     }
 }
 
-impl BlockSystem {
-    // visibility is on when the blocks kind isnt -1
-    // also sets the frame of the sprite by its kind * 9 and an additional 
-    // animation offset used to stay at specific horizontal sprites
-    fn update_sprites(b: &mut Block, sprite: &mut SpriteRender) {
-        // decrease all the time
-        if b.anim_counter > 0 {
-            b.anim_counter -= 1;
-            println!("{}, should_animate", b.anim_counter);
-        }
-
-        if b.kind != -1 {
-            if b.y == 0 {
-                b.anim_offset = 1;
-            }
-
-            sprite.sprite_number = b.kind as usize * 9 + b.anim_offset as usize;
-        }
-        else {
-            // static 0 alpha sprite rectangle
-            sprite.sprite_number = 8;
-        }
+// visibility is on when the blocks kind isnt -1
+// also sets the frame of the sprite by its kind * 9 and an additional 
+// animation offset used to stay at specific horizontal sprites
+fn update_sprites(b: &mut Block, sprite: &mut SpriteRender) {
+    // decrease all the time
+    if b.anim_counter > 0 {
+        b.anim_counter -= 1;
     }
+
+    if b.kind != -1 {
+        if b.y == 0 {
+            b.anim_offset = 1;
+        }
+
+        sprite.sprite_number = b.kind as usize * 9 + b.anim_offset as usize;
+    }
+    else {
+        // static 0 alpha sprite rectangle
+        sprite.sprite_number = 8;
+    }
+}
+
+pub fn check_for_hang(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) -> bool {
+    // condition based on another block in a different lifetime
+    let mut down_condition: bool = false;
+
+    // check if is in vec boundary
+    if i > COLS {
+        let down = blocks.get_mut(entities[i - COLS]).unwrap();
+        down_condition = down.is_empty() || down.state == "HANG";
+    }
+
+    !blocks.get_mut(entities[i]).unwrap().is_empty() && down_condition
 }

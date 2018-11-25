@@ -6,7 +6,7 @@ use block_states::block_state::{BlockState, change_state};
 pub struct Hang;
 impl BlockState for Hang {
     fn enter(b: &mut Block) {
-        b.counter = 50;
+        b.counter = 10;
     }
 
     fn exit(b: &mut Block) {}

@@ -3,6 +3,7 @@ use basics::block::Block;
 use block_states::{
     hang::Hang,
     land::Land,
+    clear::Clear,
 };
 
 // A trait that all Block states should expand on
@@ -30,11 +31,10 @@ pub fn change_state(b: &mut Block, new_state: &'static str) {
         return;
     }
 
-    println!("state: {}, old: {}, counter: {}", b.state, new_state, b.counter);
-
     // call the currents state exit function
     match b.state {
         "LAND" => Land::exit(b),
+        "CLEAR" => Clear::exit(b),
         _ => ()
     }  
         
@@ -44,6 +44,7 @@ pub fn change_state(b: &mut Block, new_state: &'static str) {
     match b.state {
         "HANG" => Hang::enter(b),
         "LAND" => Land::enter(b),
+        "CLEAR" => Clear::enter(b),
         _ => ()
     }
 }

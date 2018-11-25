@@ -27,7 +27,6 @@ impl BlockState for Fall {
         else {
             let b = blocks.get_mut(entities[i]).unwrap();
             b.state = "IDLE";
-            println!("we in fall idle call");
             return;
         }
 
@@ -42,7 +41,7 @@ impl BlockState for Fall {
             // store data into the down block
             blocks.get_mut(entities[i - COLS])
                 .unwrap()
-                .get_properties(temp_block);
+                .set_properties(temp_block);
 
             // reset data in the current one to default
             blocks.get_mut(entities[i])
