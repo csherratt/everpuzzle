@@ -45,7 +45,7 @@ impl GameMode {
 
             // set position instantly so no weird spawn flash happens
             let (x, y) = i2tuple(i);
-            let mut b = Block::new(kinds[i], x as i32, y as i32);
+            let mut b = Block::new(i as u32, kinds[i], x as i32, y as i32);
 
             let sprite_render_block = SpriteRender {
                 sprite_sheet: SpriteSheetLoader::load_blocks_sprite_sheet(world),

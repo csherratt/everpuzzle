@@ -82,7 +82,7 @@ fn main() -> amethyst::Result<()> {
         //.with(FPSSystem, "fps_system", &[])
         .with(BlockSystem{}, "block_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"])
-        .with(PlayfieldSystem{}, "playfield_system", &[]);
+        .with(PlayfieldSystem::default(), "playfield_system", &[]);
 
     // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", app_root);

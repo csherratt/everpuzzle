@@ -7,6 +7,7 @@ use block_states::land::LAND_TIME;
 #[derive(Copy, Clone)]
 pub struct Block {
     pub kind: i32, // sprite_number or -1
+    pub id: u32, 
     pub x: i32,
     pub y: i32,
     pub offset: (f32, f32),
@@ -17,9 +18,10 @@ pub struct Block {
     // clear variables
     pub chainable: bool,
     pub clearing: bool,
-    pub clear_counter: u32,
-    pub clear_anim_counter: u32,
-    pub clear_time: u32,
+    pub clear_counter: i32,
+    pub clear_anim_counter: i32,
+    pub clear_time: i32,
+    pub clear_start_counter: i32,
 
     // anim counters
     pub anim_counter: u32,
@@ -30,6 +32,7 @@ impl Default for Block {
     fn default() -> Block {
         Block {
             kind: 0,
+            id: 0,
             x: 0,
             y: 0,
             offset: (0.0, 0.0),
@@ -43,6 +46,7 @@ impl Default for Block {
             clear_counter: 0,
             clear_anim_counter: 0,
             clear_time: 0,
+            clear_start_counter: 0,
 
             // anim counters
             anim_counter: 0,
@@ -52,8 +56,8 @@ impl Default for Block {
 }
 
 impl Block {
-    pub fn new(kind: i32, x: i32, y: i32) -> Block {
-        Block { kind, x, y, ..Default::default() }
+    pub fn new(id: u32, kind: i32, x: i32, y: i32) -> Block {
+        Block { id, kind, x, y, ..Default::default() }
     }
 
     // a block is empty when its kind is -1 so it turns invisible and
@@ -91,6 +95,33 @@ impl Block {
         }
 
         return false;
+    }
+    
+    // a block is comboable when its:
+    // y isnt at the bottom of the blocks - darkened column,
+    // kind isnt invisible and its state is idle
+    // currently landing 
+    pub fn is_comboable(&self) -> bool {
+        if self.y == 0 {
+            return false;
+        }
+
+        // garbage
+
+        if self.kind != -1 && self.state == "IDLE" {
+            return true;
+        }
+
+        if self.state == "LAND" && self.counter < LAND_TIME {
+            return true;
+        }
+
+        return false;
+    }
+
+    // wether this block is comboable with another kind being given in
+    pub fn is_comboable_with(&self, other_kind: i32) -> bool {
+        self.is_comboable() && other_kind != -1 && other_kind == self.kind
     }
 
     // set properties from another block

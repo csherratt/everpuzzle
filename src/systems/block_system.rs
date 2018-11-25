@@ -92,7 +92,8 @@ fn update_sprites(b: &mut Block, sprite: &mut SpriteRender) {
         b.anim_counter -= 1;
     }
 
-    if b.kind != -1 {
+    // render sprite with kind when its not -1
+    if b.kind != -1 && !b.clearing {
         if b.y == 0 {
             b.anim_offset = 1;
         }
@@ -105,6 +106,7 @@ fn update_sprites(b: &mut Block, sprite: &mut SpriteRender) {
     }
 }
 
+// checks wether the block below is empty or falling, also checks wether this block is empty
 pub fn check_for_hang(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) -> bool {
     // condition based on another block in a different lifetime
     let mut down_condition: bool = false;

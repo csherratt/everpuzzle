@@ -4,7 +4,7 @@ use basics::block::Block;
 use block_states::block_state::{BlockState, change_state};
 
 const FLASH_ANIM: [u32; 4] = [6, 6, 0, 0];
-const FLASH_TIME: u32 = 44; 
+const FLASH_TIME: i32 = 44; 
 
 pub struct Clear;
 impl BlockState for Clear {
@@ -28,7 +28,9 @@ impl BlockState for Clear {
     fn execute(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
 		let b = blocks.get_mut(entities[i]).unwrap();
 
-		if b.clear_time - b.clear_counter <= 0 && !b.clearing {
+		// clear at the end of the animation
+		let test = b.clear_time as i32 - b.clear_counter as i32;
+		if test <= 0 && !b.clearing {
 			// particles spawn
 			b.clearing = true;
 		}
