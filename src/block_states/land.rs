@@ -5,7 +5,7 @@ use block_states::block_state::{BlockState, change_state};
 use data::block_data::{COLS, BLOCKS};
 
 const LAND_ANIM: [u32; 10] = [2, 2, 2, 3, 3, 3, 4, 4, 4, 0];
-const LAND_TIME: u32 = 10;
+pub const LAND_TIME: u32 = 10;
 
 // STOPS THE BLOCK FROM BEING CHAINABLE after animating that is
 //
@@ -29,7 +29,6 @@ impl BlockState for Land {
     // simply animate
     fn execute(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
         let b = blocks.get_mut(entities[i]).unwrap();
-        print!("we even getting here?");
         b.anim_offset = LAND_ANIM[(LAND_TIME - b.anim_counter - 1) as usize];
     }
 

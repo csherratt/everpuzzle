@@ -11,6 +11,8 @@ use basics::{
     kind_generator::KindGenerator,
     stack::Stack,
 };
+use block_states::swap::SWAP_TIME;
+use block_states::block_state::change_state;
 
 use data::{
     block_data::*, 
@@ -144,10 +146,7 @@ impl<'a> System<'a> for CursorSystem {
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
                 let pos = tuple2i(cursor.pos);
-
-                let temp_kind: i32 = blocks.get_mut(stack.entities[pos]).unwrap().kind; 
-                blocks.get_mut(stack.entities[pos]).unwrap().kind = blocks.get(stack.entities[pos + 1]).unwrap().kind;
-                blocks.get_mut(stack.entities[pos + 1]).unwrap().kind = temp_kind;
+                swap(pos, &stack.entities, &mut blocks);  
             }
         }
 
@@ -165,15 +164,66 @@ impl<'a> System<'a> for CursorSystem {
     }
 }
 
-/*
-impl CursorSystem {
-    fn swap(b: &mut Block, blocks: &mut WriteStorage<'_, Block>) {
-        if let Some(down) = b.down {
-            let other = (&mut blocks).get_mut(down).unwrap();
+fn swap(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
+    let mut can_swap: bool = false;
+    {
+        let b1 = blocks.get(entities[i]).unwrap();
+        let b2 = blocks.get(entities[i + 1]).unwrap();
 
-            let temp = b.kind; 
-            b.kind = other.kind;
-            other.kind = temp;
+        let mut b1_above_block: Option<&Block> = None;
+        let mut b2_above_block: Option<&Block> = None;
+
+        if i < BLOCKS - COLS {
+            b1_above_block = blocks.get(entities[i + COLS]);
+            b2_above_block = blocks.get(entities[i + 1 + COLS]);
+        }
+
+        if b1.is_swappable(b2, b1_above_block) && b2.is_swappable(b1, b2_above_block) {
+            if b1.is_empty() && b2.is_empty() {
+                return;
+            }
+
+            can_swap = true;
         }
     }
-}*/
+
+    if can_swap {
+        // set variables
+        set_swap_variables(blocks.get_mut(entities[i]).unwrap(), 1.0);
+        set_swap_variables(blocks.get_mut(entities[i + 1]).unwrap(), -1.0);
+
+        // set default stack blocks
+        let mut left_block = Block::default();
+        let mut right_block = Block::default();
+
+        // store data from the left to a temp
+        left_block = blocks.get(entities[i])
+            .unwrap()
+            .clone();
+
+        // store data from the right to a temp
+        right_block = blocks.get(entities[i + 1])
+            .unwrap()
+            .clone();
+
+        {
+            blocks.get_mut(entities[i + 1])
+                .unwrap()
+                .set_properties(left_block);
+        }
+
+        {
+            blocks.get_mut(entities[i])
+                .unwrap()
+                .set_properties(right_block);
+        }
+    } 
+}
+
+// swap variables that need to be set on a different direction
+fn set_swap_variables (b: &mut Block, dir: f32) {
+    b.offset.0 = 16.0 * dir;
+    b.counter = SWAP_TIME as u32;
+    b.move_dir = dir;
+    change_state(b, "SWAP");
+}
