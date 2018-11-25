@@ -19,7 +19,6 @@ use basics::{
 };
 
 use data::block_data::BLOCKS;
-use data::helpers::i2tuple;
 
 pub struct GameMode {
     rng_seed: [u8; 16],
@@ -35,16 +34,16 @@ impl GameMode {
     }
 
     // creates all entities with block components attached, spritesheet data with sprite_number
-    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) -> Stack {
+    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) {
         world.register::<Block>();
-        let mut entities: Vec<Entity> = Vec::new();
+        let mut block_entities: Vec<Entity> = Vec::new();
 
         for i in 0..BLOCKS {
             let mut trans = Transform::default();
             trans.scale = Vector3::new(4.0, 4.0, 4.0);
 
             // set position instantly so no weird spawn flash happens
-            let (x, y) = i2tuple(i);
+            let (x, y) = Stack::i2xy(i);
             let mut b = Block::new(i as u32, kinds[i], x as i32, y as i32);
 
             let sprite_render_block = SpriteRender {
@@ -54,7 +53,7 @@ impl GameMode {
                 flip_vertical: false,
             };
 
-            entities.push(world.create_entity()
+            block_entities.push(world.create_entity()
                 .with(sprite_render_block)
                 .with(b)
                 .with(GlobalTransform::default())
@@ -62,7 +61,11 @@ impl GameMode {
                 .build());
         }
 
-        Stack::new(entities) 
+        // add a new stack to the whole world
+        world.register::<Stack>();
+        world.create_entity()
+            .with(Stack::new(block_entities))
+            .build();
     }
 
     // create a camera that should have the same dimensions as the
@@ -93,8 +96,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         };
         let kinds = kind_gen.create_stack(5, 8);
 
-        let block_stack = GameMode::create_blocks(world, kinds);
-        world.add_resource::<Stack>(block_stack);
+        GameMode::create_blocks(world, kinds);
         // add the random number generator as a global resource to be used
         world.add_resource::<KindGenerator>(kind_gen);
 
@@ -113,7 +115,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         let mut trans = Transform::default();
         trans.scale = Vector3::new(2.0, 2.0, 2.0);
 
-        let mut cursor = Cursor::new((2.0, 5.0));
+        let cursor = Cursor::new(2.0, 5.0);
         cursor.set_position(&mut trans);
 
         world.register::<Cursor>();

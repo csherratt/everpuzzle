@@ -1,7 +1,9 @@
 #![allow(unused_variables)]
-use amethyst::ecs::prelude::{WriteStorage, Entity};
+use amethyst::ecs::prelude::WriteStorage;
 use basics::block::Block;
+use basics::stack::Stack;
 use block_states::block_state::{BlockState, change_state};
+use data::block_data::{BLOCKS, COLS, ROWS};
 
 const FLASH_ANIM: [u32; 4] = [6, 6, 0, 0];
 const FLASH_TIME: i32 = 44; 
@@ -25,8 +27,8 @@ impl BlockState for Clear {
 	}
 
 	// just the animation part of the whole clearing
-    fn execute(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
-		let b = blocks.get_mut(entities[i]).unwrap();
+    fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
+		let b = blocks.get_mut(stack.from_i(i)).unwrap();
 
 		// clear at the end of the animation
 		let test = b.clear_time as i32 - b.clear_counter as i32;
@@ -55,9 +57,19 @@ impl BlockState for Clear {
 		}
 	}
 
-    fn counter_end(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
-		// todo
+	// set this block to idle, also set chainable on all above that are real!
+    fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
+        change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "IDLE");
 
-        change_state(blocks.get_mut(entities[i]).unwrap(), "IDLE");
+		// before changing to exit set all above to chainable
+		let x = blocks.get(stack.from_i(i)).unwrap().x as usize;
+		let y = blocks.get(stack.from_i(i)).unwrap().y as usize;
+		for i in y..ROWS {
+			let above = blocks.get_mut(stack.from_xy(x, i)).unwrap();
+
+			if above.kind != -1 && above.state == "IDLE" {
+				above.chainable = true;
+			}
+		}
     }
 }

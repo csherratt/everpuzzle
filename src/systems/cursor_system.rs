@@ -13,11 +13,7 @@ use basics::{
 };
 use block_states::swap::SWAP_TIME;
 use block_states::block_state::change_state;
-
-use data::{
-    block_data::*, 
-    helpers::tuple2i
-};
+use data::block_data::*;
 
 use std::collections::HashMap;
 
@@ -87,7 +83,7 @@ impl<'a> System<'a> for CursorSystem {
         Read<'a, InputHandler<String, String>>,
         Write<'a, KindGenerator>,
         WriteStorage<'a, Block>,
-        Read<'a, Stack>,
+        ReadStorage<'a, Stack>,
     );
 
     fn run(&mut self, (
@@ -97,37 +93,37 @@ impl<'a> System<'a> for CursorSystem {
             mut input,
             mut kind_gen,
             mut blocks,
-            stack,
+            stacks,
             ): Self::SystemData) 
     {
         if self.hold(&mut input, "up") {
             for cursor in (&mut cursors).join() {
-                if cursor.pos.1 < (ROWS - 1) as f32 {
-                    cursor.pos.1 += 1.0;
+                if cursor.y < (ROWS - 1) as f32 {
+                    cursor.y += 1.0;
                 }
             }
         }
 
         if self.hold(&mut input, "down") {
             for cursor in (&mut cursors).join() {
-                if cursor.pos.1 > 1.0 {
-                    cursor.pos.1 -= 1.0;
+                if cursor.y > 1.0 {
+                    cursor.y -= 1.0;
                 }
             }
         }
 
         if self.hold(&mut input, "left") {
             for cursor in (&mut cursors).join() {
-                if cursor.pos.0 > 0.0 {
-                    cursor.pos.0 -= 1.0;
+                if cursor.x > 0.0 {
+                    cursor.x -= 1.0;
                 }
             }
         }
 
         if self.hold(&mut input, "right") {
             for cursor in (&mut cursors).join() {
-                if cursor.pos.0 < (COLS - 2) as f32 {
-                    cursor.pos.0 += 1.0;
+                if cursor.x < (COLS - 2) as f32 {
+                    cursor.x += 1.0;
                 }
             }
         }
@@ -136,8 +132,10 @@ impl<'a> System<'a> for CursorSystem {
         if self.press(&mut input, "space") {
             let kinds = kind_gen.create_stack(5, 8);
             
-            for i in 0..BLOCKS {
-                blocks.get_mut(stack.entities[i]).unwrap().kind = kinds[i];
+            for stack in (&stacks).join() {
+                for i in 0..BLOCKS {
+                    blocks.get_mut(stack.from_i(i)).unwrap().kind = kinds[i];
+                }
             }
         }
 
@@ -145,8 +143,10 @@ impl<'a> System<'a> for CursorSystem {
         // id matches cursor pos conversion, swapping from one block to another block
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
-                let pos = tuple2i(cursor.pos);
-                swap(pos, &stack.entities, &mut blocks);  
+                for stack in (&stacks).join() {
+                    println!("getting herer");
+                    swap(cursor.x, cursor.y, &stack, &mut blocks);
+                }
             }
         }
 
@@ -164,18 +164,23 @@ impl<'a> System<'a> for CursorSystem {
     }
 }
 
-fn swap(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
+fn swap(
+    x: f32, y: f32, 
+    stack: &Stack, 
+    blocks: &mut WriteStorage<'_, Block>) {
+    let i = Stack::xy2i(x as usize, y as usize);
+
     let mut can_swap: bool = false;
     {
-        let b1 = blocks.get(entities[i]).unwrap();
-        let b2 = blocks.get(entities[i + 1]).unwrap();
+        let b1 = blocks.get(stack.from_i(i)).unwrap();
+        let b2 = blocks.get(stack.from_i(i + 1)).unwrap();
 
         let mut b1_above_block: Option<&Block> = None;
         let mut b2_above_block: Option<&Block> = None;
 
         if i < BLOCKS - COLS {
-            b1_above_block = blocks.get(entities[i + COLS]);
-            b2_above_block = blocks.get(entities[i + 1 + COLS]);
+            b1_above_block = blocks.get(stack.from_i(i + COLS));
+            b2_above_block = blocks.get(stack.from_i(i + 1 + COLS));
         }
 
         if b1.is_swappable(b2, b1_above_block) && b2.is_swappable(b1, b2_above_block) {
@@ -189,31 +194,31 @@ fn swap(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) 
 
     if can_swap {
         // set variables
-        set_swap_variables(blocks.get_mut(entities[i]).unwrap(), 1.0);
-        set_swap_variables(blocks.get_mut(entities[i + 1]).unwrap(), -1.0);
+        set_swap_variables(blocks.get_mut(stack.from_i(i)).unwrap(), 1.0);
+        set_swap_variables(blocks.get_mut(stack.from_i(i + 1)).unwrap(), -1.0);
 
         // set default stack blocks
         let mut left_block = Block::default();
         let mut right_block = Block::default();
 
         // store data from the left to a temp
-        left_block = blocks.get(entities[i])
+        left_block = blocks.get(stack.from_i(i))
             .unwrap()
             .clone();
 
         // store data from the right to a temp
-        right_block = blocks.get(entities[i + 1])
+        right_block = blocks.get(stack.from_i(i + 1))
             .unwrap()
             .clone();
 
         {
-            blocks.get_mut(entities[i + 1])
+            blocks.get_mut(stack.from_i(i + 1))
                 .unwrap()
                 .set_properties(left_block);
         }
 
         {
-            blocks.get_mut(entities[i])
+            blocks.get_mut(stack.from_i(i))
                 .unwrap()
                 .set_properties(right_block);
         }

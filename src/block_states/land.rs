@@ -1,6 +1,7 @@
 #![allow(unused_variables)]
-use amethyst::ecs::prelude::{WriteStorage, Entity};
+use amethyst::ecs::prelude::WriteStorage;
 use basics::block::Block;
+use basics::stack::Stack;
 use block_states::block_state::{BlockState, change_state};
 use data::block_data::{COLS, BLOCKS};
 
@@ -27,24 +28,24 @@ impl BlockState for Land {
     }
 
     // simply animate
-    fn execute(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
-        let b = blocks.get_mut(entities[i]).unwrap();
+    fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
+        let b = blocks.get_mut(stack.from_i(i)).unwrap();
         b.anim_offset = LAND_ANIM[(LAND_TIME - b.anim_counter - 1) as usize];
     }
 
     // change to idle on default
     // if above isnt null and hanging, set the counter to the aboves counter
-    fn counter_end(i: usize, entities: &Vec<Entity>, blocks: &mut WriteStorage<'_, Block>) {
+    fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
         let mut above_hanging: bool = false;
         let mut above_counter: u32 = 0;
 
         if i < BLOCKS - COLS {
-            let above = blocks.get(entities[i + COLS]).unwrap();
+            let above = blocks.get(stack.from_i(i + COLS)).unwrap();
             above_hanging = above.state == "HANG";
             above_counter = above.counter;
         }
  
-        let b = blocks.get_mut(entities[i]).unwrap();
+        let b = blocks.get_mut(stack.from_i(i)).unwrap();
         if above_hanging {
             change_state(b, "HANG"); 
             b.counter = above_counter;

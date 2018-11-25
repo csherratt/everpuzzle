@@ -1,5 +1,6 @@
-use amethyst::ecs::prelude::{WriteStorage, Entity};
+use amethyst::ecs::prelude::WriteStorage;
 use basics::block::Block;
+use basics::stack::Stack;
 use block_states::{
     hang::Hang,
     land::Land,
@@ -16,13 +17,13 @@ pub trait BlockState {
 
     // happens each frame,
     // takes an iterator - to know which block youre looking at right now
-    // takes a reference of a vector of entities - access other components 
+    // takes a stack of block entities that you can access
     // takes the whole stack of blocks - get ref or mut out of this
-    fn execute(usize, &Vec<Entity>, &mut WriteStorage<'_, Block>);
+    fn execute(usize, &Stack, &mut WriteStorage<'_, Block>);
 
     // gets called once the blocks counter runs down to 0
     // mostly used to switch states
-    fn counter_end(usize, &Vec<Entity>, &mut WriteStorage<'_, Block>);
+    fn counter_end(usize, &Stack, &mut WriteStorage<'_, Block>);
 }
 
 // changes the current blocks state to a new one
