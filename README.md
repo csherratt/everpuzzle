@@ -1,6 +1,6 @@
 ![screenshot](https://github.com/Skytrias/everpuzzle/blob/master/everpuzzle_2018-11-16_10-29-23.png "preview")
 
-# Rust Attack
+# Everpuzzle
 **Tetris Attack/Pokemon Puzzle esque game written in Rust with Ametyhst**
 
 ## Goal
