@@ -1,7 +1,7 @@
 #![allow(unused_variables)]
 use amethyst::ecs::prelude::WriteStorage;
-use basics::block::Block;
-use basics::stack::Stack;
+use components::block::Block;
+use components::playfield::stack::Stack;
 use block_states::block_state::{BlockState, change_state};
 use data::block_data::{BLOCKS, COLS, ROWS};
 
@@ -59,17 +59,27 @@ impl BlockState for Clear {
 
 	// set this block to idle, also set chainable on all above that are real!
     fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
+		set_chainables(i, &stack, blocks);
         change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "IDLE");
-
-		// before changing to exit set all above to chainable
-		let x = blocks.get(stack.from_i(i)).unwrap().x as usize;
-		let y = blocks.get(stack.from_i(i)).unwrap().y as usize;
-		for i in y..ROWS {
-			let above = blocks.get_mut(stack.from_xy(x, i)).unwrap();
-
-			if above.kind != -1 && above.state == "IDLE" {
-				above.chainable = true;
-			}
-		}
     }
+}
+
+fn set_chainables(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
+	let x = blocks.get(stack.from_i(i)).unwrap().x as usize;
+	let y = blocks.get(stack.from_i(i)).unwrap().y as usize;
+	
+	for i in y..ROWS {
+		let above = blocks.get_mut(stack.from_xy(x, i)).unwrap();	
+
+		// look for non invisible blocks
+		if above.kind != -1 {
+			if above.state == "IDLE" && !above.chainable {
+				above.chainable = true;
+			}	
+		}
+		else {
+			// otherwhise just stop the for loop completly
+			return;
+		}
+	}
 }
