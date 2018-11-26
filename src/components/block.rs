@@ -4,7 +4,7 @@ use std::marker::Copy;
 use std::clone::Clone;
 use block_states::land::LAND_TIME;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Block {
     pub kind: i32, // sprite_number or -1 meaning invisible
     pub id: u32, 
@@ -125,15 +125,18 @@ impl Block {
     }
 
     // set properties from another block
+    // THIS SHOULD BE CHANGED WHENEVER DATA SHOULD PERSIST AFTER A FALL OR A SWAP!!!
     pub fn set_properties(&mut self, other: Block) {
         self.kind = other.kind;
         self.state = other.state;
+        self.chainable = other.chainable;
     }
 
     // reset distinct values 
     pub fn reset(&mut self) {
         self.kind = -1; 
         self.state = "IDLE";
+        self.chainable = false;
     }
 }
 

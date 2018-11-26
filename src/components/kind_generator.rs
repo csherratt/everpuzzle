@@ -5,7 +5,6 @@ use data::block_data::{
     BLOCKS,
 };
 
-
 // resource that stores the rng generator that will be global
 // accessed via the world
 #[derive(Debug)]

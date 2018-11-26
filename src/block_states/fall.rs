@@ -1,7 +1,7 @@
 #![allow(unused_variables)]
 use amethyst::ecs::prelude::WriteStorage;
-use basics::block::Block;
-use basics::stack::Stack;
+use components::block::Block;
+use components::playfield::stack::Stack;
 use block_states::block_state::{BlockState, change_state};
 use data::block_data::COLS;
 

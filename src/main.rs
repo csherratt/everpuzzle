@@ -11,7 +11,7 @@ use amethyst::{
 use std::time::Duration;
 
 mod data;
-mod basics;
+mod components;
 mod game_modes;
 mod systems;
 mod block_states;
@@ -35,7 +35,7 @@ fn main() -> amethyst::Result<()> {
     let app_root = application_root_dir();
     // path to display settings
     let path = format!(
-        "{}/src/resources/display_config.ron",
+        "{}/src/configs/display_config.ron",
         app_root
     );
     let display_config = DisplayConfig::load(&path);
@@ -61,10 +61,10 @@ fn main() -> amethyst::Result<()> {
     // testing different inputs for keyboard/controller
     let binding_path = {
         if cfg!(feature = "sdl_controller") {
-            format!("{}/src/resources/input_controller.ron", app_root)
+            format!("{}/src/configs/input_controller.ron", app_root)
         }
         else {
-            format!("{}/src/resources/input.ron", app_root)
+            format!("{}/src/configs/input.ron", app_root)
         }
     };
 
@@ -82,12 +82,12 @@ fn main() -> amethyst::Result<()> {
         //.with(FPSSystem, "fps_system", &[])
         .with(BlockSystem{}, "block_system", &[])
         .with(CursorSystem::new(), "cursor_system", &["input_system"])
-        .with(PlayfieldSystem::default(), "playfield_system", &[]);
+        .with(PlayfieldSystem{}, "playfield_system", &[]);
 
     // set the assets dir where all sprites will be loaded from
     let assets_dir = format!("{}/src/sprites/", app_root);
     let display_resource = DisplayConfig::load(&path);
-    Application::build(assets_dir, GameMode::new(rand_seed, display_resource))?
+    Application::build(assets_dir, GameMode::new(SOME_SEED, display_resource))?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(1)), 60)
         .build(game_data)?
         .run();

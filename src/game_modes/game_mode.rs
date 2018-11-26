@@ -7,15 +7,19 @@ use amethyst::{
 };
 use rand::prelude::*;
 
-use basics::{
+use components::{
     block::Block,
-    stack::Stack,
+    playfield::stack::Stack,
     cursor::Cursor,
     spritesheet_loader::{
         SpriteSheetLoader,
         load_sprite_sheet
     },
     kind_generator::KindGenerator,
+    playfield::{
+        playfield_clear::PlayfieldClear,
+        playfield_push::PlayfieldPush,
+    },
 };
 
 use data::block_data::BLOCKS;
@@ -34,7 +38,7 @@ impl GameMode {
     }
 
     // creates all entities with block components attached, spritesheet data with sprite_number
-    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) {
+    pub fn create_blocks(world: &mut World, kinds: Vec<i32>) -> Vec<Entity> {
         world.register::<Block>();
         let mut block_entities: Vec<Entity> = Vec::new();
 
@@ -61,11 +65,7 @@ impl GameMode {
                 .build());
         }
 
-        // add a new stack to the whole world
-        world.register::<Stack>();
-        world.create_entity()
-            .with(Stack::new(block_entities))
-            .build();
+        block_entities
     }
 
     // create a camera that should have the same dimensions as the
@@ -96,7 +96,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         };
         let kinds = kind_gen.create_stack(5, 8);
 
-        GameMode::create_blocks(world, kinds);
+        let block_entities = GameMode::create_blocks(world, kinds);
         // add the random number generator as a global resource to be used
         world.add_resource::<KindGenerator>(kind_gen);
 
@@ -112,14 +112,16 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             flip_vertical: false,
         };
 
+        // cursor transform
         let mut trans = Transform::default();
         trans.scale = Vector3::new(2.0, 2.0, 2.0);
 
         let cursor = Cursor::new(2.0, 5.0);
         cursor.set_position(&mut trans);
 
+        // generate a cursor entity
         world.register::<Cursor>();
-        world.create_entity()
+        let cursor_entity = world.create_entity()
             .with(sprite_sheet)
             .with(Transparent::default())
             .with(cursor)
@@ -128,6 +130,17 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
             .build();
 
         world.add_resource::<FPSCounter>(Default::default());
+
+        // Create a Playfield with a stack, clear, push component,
+        // STACK gives access to blocks and cursor dependant on the general storages
+        world.register::<Stack>();
+        world.register::<PlayfieldClear>();
+        world.register::<PlayfieldPush>();
+        world.create_entity()
+            .with(PlayfieldClear::default())
+            .with(PlayfieldPush::default())
+            .with(Stack::new(block_entities, cursor_entity))
+            .build();
 
         self.initialise_camera(world);
     }

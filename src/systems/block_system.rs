@@ -4,9 +4,9 @@ use amethyst::{
     core::Transform,
 };
 
-use basics::{
+use components::{
     block::Block,
-    stack::Stack,
+    playfield::stack::Stack,
 };
 use data::block_data::{COLS, BLOCKS};
 use block_states::{

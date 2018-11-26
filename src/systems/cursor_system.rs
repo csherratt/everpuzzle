@@ -5,11 +5,11 @@ use amethyst::{
     input::*
 };
 
-use basics::{
+use components::{
     block::Block,
     cursor::Cursor,
     kind_generator::KindGenerator,
-    stack::Stack,
+    playfield::stack::Stack,
 };
 use block_states::swap::SWAP_TIME;
 use block_states::block_state::change_state;
@@ -32,6 +32,7 @@ impl CursorSystem {
         key_presses.insert(String::from("left"), 0);
         key_presses.insert(String::from("swap"), 0);
         key_presses.insert(String::from("space"), 0);
+        key_presses.insert(String::from("raise"), 0);
 
         CursorSystem {
             key_presses
@@ -144,8 +145,15 @@ impl<'a> System<'a> for CursorSystem {
         if self.press(&mut input, "swap") {
             for cursor in (cursors).join() {
                 for stack in (&stacks).join() {
-                    println!("getting herer");
                     swap(cursor.x, cursor.y, &stack, &mut blocks);
+                }
+            }
+        }
+
+        if self.press(&mut input, "raise") {
+            for cursor in cursors.join() {
+                for stack in (&stacks).join() {
+                     
                 }
             }
         }

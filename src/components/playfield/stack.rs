@@ -3,33 +3,26 @@ use amethyst::ecs::prelude::{Entity, Component, DenseVecStorage};
 use data::block_data::COLS;
 
 pub struct Stack {
-	entities: Vec<Entity>,
-}
-
-impl Default for Stack {
-	fn default() -> Stack {
-		Stack {
-			entities: Vec::new(),
-		}
-	}
+	block_entities: Vec<Entity>,
+	pub cursor_entity: Entity,
 }
 
 impl Stack {
-	pub fn new(entities: Vec<Entity>) -> Stack {
+	pub fn new(block_entities: Vec<Entity>, cursor_entity: Entity) -> Stack {
 		Stack {
-			entities,
-			..Default::default()
+			block_entities,
+			cursor_entity,
 		}
 	}
 
 	// simple way to get an entity back
 	pub fn from_i(&self, i: usize) -> Entity {
-		self.entities[i]
+		self.block_entities[i]
 	}
 
 	// shouldnt be used too often, rather use i2xy to get the iterator calculated once
 	pub fn from_xy(&self, x: usize, y: usize) -> Entity {
-		self.entities[Stack::xy2i(x, y)]
+		self.block_entities[Stack::xy2i(x, y)]
 	}
 
 	// convert an x and y coordinate to i
