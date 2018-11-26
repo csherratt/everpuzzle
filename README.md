@@ -1,7 +1,9 @@
-![screenshot](https://github.com/Skytrias/everpuzzle/blob/master/everpuzzle_2018-11-16_10-29-23.png "preview")
+![screenshot](https://github.com/Skytrias/everpuzzle/blob/master/everpuzzle-04.gif "preview")
 
 # Everpuzzle
 **Tetris Attack/Pokemon Puzzle esque game written in Rust with Ametyhst**
+
+Talk / Code Walkthrough on this project https://www.youtube.com/watch?v=P_9A7P0uNpY
 
 ## Goal
 Build a clone similar to Tetris Attack and Pokémon Puzzle. This game needs to abide by the original rules of the game, so for example hit right frame times to feel exactly like the old games.
