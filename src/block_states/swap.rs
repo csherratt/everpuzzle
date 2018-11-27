@@ -14,7 +14,7 @@ impl BlockState for Swap {
     fn exit(b: &mut Block) {}
 
     fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
 
         b.offset.0 = b.move_dir * 16.0
             + -b.move_dir * ease_out_quad(SWAP_TIME - b.counter as f32, 0.0, 16.0, SWAP_TIME);
@@ -23,7 +23,7 @@ impl BlockState for Swap {
     fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
         let can_fall = { check_for_hang(i, stack, blocks) };
 
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
         if can_fall {
             change_state(b, "HANG");
         } else {

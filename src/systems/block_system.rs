@@ -28,7 +28,7 @@ impl<'a> System<'a> for BlockSystem {
             for i in 0..BLOCKS {
                 // decrease the counter if its over 0
                 {
-                    let mut b = blocks.get_mut(stack.from_i(i)).unwrap();
+                    let mut b = blocks.get_mut(stack[i]).unwrap();
 
                     if b.counter > 0 {
                         b.counter -= 1;
@@ -36,7 +36,7 @@ impl<'a> System<'a> for BlockSystem {
                 }
 
                 // match all on the blocks state - run all execute functions
-                match blocks.get(stack.from_i(i)).unwrap().state {
+                match blocks.get(stack[i]).unwrap().state {
                     "IDLE" => Idle::execute(i, &stack, &mut blocks),
                     "FALL" => Fall::execute(i, &stack, &mut blocks),
                     "LAND" => Land::execute(i, &stack, &mut blocks),
@@ -46,8 +46,8 @@ impl<'a> System<'a> for BlockSystem {
                 }
 
                 // if the counter is at 0, call current states counter end function
-                if blocks.get(stack.from_i(i)).unwrap().counter <= 0 {
-                    match blocks.get(stack.from_i(i)).unwrap().state {
+                if blocks.get(stack[i]).unwrap().counter <= 0 {
+                    match blocks.get(stack[i]).unwrap().state {
                         "HANG" => Hang::counter_end(i, &stack, &mut blocks),
                         "FALL" => Fall::counter_end(i, &stack, &mut blocks),
                         "LAND" => Land::counter_end(i, &stack, &mut blocks),
@@ -80,7 +80,7 @@ fn update_sprites(
     hiddens: &mut WriteStorage<'_, Hidden>,
 ) {
     for i in 0..BLOCKS {
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
 
         // decrease all the time
         if b.anim_counter > 0 {
@@ -89,20 +89,20 @@ fn update_sprites(
 
         // render sprite with kind when its not -1
         if b.kind != -1 && !b.clearing {
-            if hiddens.contains(stack.from_i(i)) {
-                hiddens.remove(stack.from_i(i));
+            if hiddens.contains(stack[i]) {
+                hiddens.remove(stack[i]);
             }
 
             if b.y == 0 {
                 b.anim_offset = 1;
             }
 
-            sprites.get_mut(stack.from_i(i)).unwrap().sprite_number =
+            sprites.get_mut(stack[i]).unwrap().sprite_number =
                 b.kind as usize * 8 + b.anim_offset as usize;
         } else {
-            if !hiddens.contains(stack.from_i(i)) {
+            if !hiddens.contains(stack[i]) {
                 hiddens
-                    .insert(stack.from_i(i), Hidden::default())
+                    .insert(stack[i], Hidden::default())
                     .expect("add hide component");
             }
         }
@@ -116,9 +116,9 @@ pub fn check_for_hang(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Blo
 
     // check if is in vec boundary
     if i > COLS {
-        let down = blocks.get_mut(stack.from_i(i - COLS)).unwrap();
+        let down = blocks.get_mut(stack[i - COLS]).unwrap();
         down_condition = down.is_empty() || down.state == "HANG";
     }
 
-    !blocks.get_mut(stack.from_i(i)).unwrap().is_empty() && down_condition
+    !blocks.get_mut(stack[i]).unwrap().is_empty() && down_condition
 }

@@ -29,7 +29,7 @@ impl BlockState for Land {
 
     // simply animate
     fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
         b.anim_offset = LAND_ANIM[(LAND_TIME - b.anim_counter - 1) as usize];
     }
 
@@ -40,12 +40,12 @@ impl BlockState for Land {
         let mut above_counter: u32 = 0;
 
         if i < BLOCKS - COLS {
-            let above = blocks.get(stack.from_i(i + COLS)).unwrap();
+            let above = blocks.get(stack[i + COLS]).unwrap();
             above_hanging = above.state == "HANG";
             above_counter = above.counter;
         }
 
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
         if above_hanging {
             change_state(b, "HANG");
             b.counter = above_counter;
