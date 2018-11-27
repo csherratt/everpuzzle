@@ -1,8 +1,8 @@
 #![allow(unused_variables)]
 use amethyst::ecs::prelude::WriteStorage;
+use block_states::block_state::{change_state, BlockState};
 use components::block::Block;
 use components::playfield::stack::Stack;
-use block_states::block_state::{BlockState, change_state};
 
 pub struct Hang;
 impl BlockState for Hang {

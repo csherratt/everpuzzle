@@ -1,15 +1,15 @@
+use amethyst::assets::*;
 use amethyst::prelude::*;
 use amethyst::renderer::*;
-use amethyst::assets::*;
 
 pub struct SpriteSheetLoader {
-    pub block_handle: SpriteSheetHandle
+    pub block_handle: SpriteSheetHandle,
 }
 
 impl SpriteSheetLoader {
     pub fn new(world: &mut World) -> SpriteSheetLoader {
         SpriteSheetLoader {
-            block_handle: SpriteSheetLoader::load_blocks_sprite_sheet(world)
+            block_handle: SpriteSheetLoader::load_blocks_sprite_sheet(world),
         }
     }
 
@@ -30,7 +30,8 @@ impl SpriteSheetLoader {
         // `texture_id` is a application defined ID given to the texture to store in the `World`.
         // This is needed to link the texture to the sprite_sheet.
         let texture_id = 0;
-        world.write_resource::<MaterialTextureSet>()
+        world
+            .write_resource::<MaterialTextureSet>()
             .insert(texture_id, texture_handle);
 
         const SPRITESHEET_SIZE: (f32, f32) = (128.0, 144.0);
@@ -53,9 +54,9 @@ impl SpriteSheetLoader {
                     tex_coords: TextureCoordinates {
                         left: x as f32 * 16.0 / SPRITESHEET_SIZE.0,
                         right: (x as f32 + 1.0) * 16.0 / SPRITESHEET_SIZE.0,
-                        bottom: 1.0 -  (y as f32 + 1.0) * 16.0 / SPRITESHEET_SIZE.1,
-                        top: 1.0  -  y as f32 * 16.0 / SPRITESHEET_SIZE.1,
-                    }
+                        bottom: 1.0 - (y as f32 + 1.0) * 16.0 / SPRITESHEET_SIZE.1,
+                        top: 1.0 - y as f32 * 16.0 / SPRITESHEET_SIZE.1,
+                    },
                 })
             }
         }
@@ -82,17 +83,18 @@ pub fn load_sprite_sheet(world: &mut World, name: &str, filename: &str) -> Sprit
     // link texture with spritesheet
     // TODO: Texture id should be unique
     let texture_id = 1;
-    world.write_resource::<MaterialTextureSet>()
+    world
+        .write_resource::<MaterialTextureSet>()
         .insert(texture_id, {
             loader.load(
                 name,
                 PngFormat,
                 TextureMetadata::srgb_scale(),
                 (),
-                &world.read_resource::<AssetStorage<Texture>>()
-            )   
+                &world.read_resource::<AssetStorage<Texture>>(),
+            )
         });
-    
+
     // spritesheet_handle return
     let sprite_sheethandle = {
         loader.load(
