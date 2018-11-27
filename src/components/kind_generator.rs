@@ -153,7 +153,7 @@ impl KindGenerator {
         cond1: i32, 
         cond2: i32, 
     ) -> i32 {
-        let mut numbers: Vec<i32> = vec![-1, 0, 1, 2, 3, 4];
+        let mut numbers: Vec<i32> = vec![0, 1, 2, 3, 4];
        
         if cond1 != -1 {
             numbers.retain(|x| x != &cond1);

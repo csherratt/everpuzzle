@@ -1,61 +1,36 @@
 use amethyst::ecs::*;
+
 use components::{
 	block::Block,
-	playfield::stack::Stack,
 	cursor::Cursor,
 	playfield::{
+		stack::Stack,
 		playfield_clear::PlayfieldClear,
-		playfield_push::PlayfieldPush,
 	},
 };
+
 use block_states::block_state::change_state;
 use data::block_data::{BLOCKS, COLS, ROWS};
 use std::cmp::max;
 
-pub struct PlayfieldSystem;
+pub struct ClearSystem;
 
-impl<'a> System<'a> for PlayfieldSystem {
+impl<'a> System<'a> for ClearSystem {
     type SystemData = (
 		WriteStorage<'a, PlayfieldClear>,
-		WriteStorage<'a, PlayfieldPush>,
 		WriteStorage<'a, Block>,
 		ReadStorage<'a, Stack>,
-		WriteStorage<'a, Cursor>,
-		Entities<'a>,
     );
 
     fn run(&mut self, (
 		mut playfield_clears,
-		mut playfield_pushes,
 		mut blocks, 
 		stacks, 
-		mut cursors,
-		entities,
 	): Self::SystemData) {
-		// playfield push info / push animation WIP
-		for (entity, stack) in (&entities, &stacks).join() {
-			{
-				// store info in p_push
-				let mut p_push = playfield_pushes.get_mut(entity).unwrap();
-				p_push.any_clears = check_blocks_clearing(&stack, &blocks);
-				p_push.any_top_blocks = check_blocks_at_top(&stack, &blocks); 
-			}
-
-			{
-				// actually offset things based on time
-				visual_offset(
-					playfield_pushes.get_mut(entity).unwrap(), 
-					&stack, 
-					&mut blocks, 
-					cursors.get_mut(stack.cursor_entity).unwrap(),
-				);
-			}
-		}
-	
 		// block clear detection
 		// counts the amount of clears each frame, passes them uniquely to an array holding their ids
 		// sets a lot of playfield_clear values and then sets the blocks to animate with given times
-		for (p_clear, p_push, stack) in (&mut playfield_clears, &mut playfield_pushes, &stacks).join() {
+		for (p_clear, stack) in (&mut playfield_clears, &stacks).join() {
 			for x in 0..COLS {
 				for y in 0..ROWS {
 					for clear_block_id in check_clear(x, y, &stack, &blocks) {
@@ -110,92 +85,6 @@ impl<'a> System<'a> for PlayfieldSystem {
 			}
 		}
 	}
-}
-
-// returns true when any block was found that is currently in clear state
-fn check_blocks_clearing(stack: &Stack, blocks: &WriteStorage<'_, Block>) -> bool {
-	for i in 0..BLOCKS {
-		let b = blocks.get(stack.from_i(i)).unwrap();
-
-		if b.state == "CLEAR" {// or garbage clear
-			return true;
-		}
-	}
-
-	return false;
-}
-
-// returns true if any "real" block is at the top of the grid
-fn check_blocks_at_top(stack: &Stack, blocks: &WriteStorage<'_, Block>) -> bool {
-	for x in 0..COLS {
-		let b = blocks.get(stack.from_xy(x, ROWS - 1)).unwrap();
-
-		if b.kind != -1 && b.state == "IDLE" { // or garbage 
-			return true;
-		}
-	}
-
-	return false;
-}
-
-fn visual_offset(
-	p_push: &mut PlayfieldPush,
-	stack: &Stack,	
-	blocks: &mut WriteStorage<'_, Block>,
-	cursor: &mut Cursor,
-) {
-	// if any cursor signal comes through do smooth increase thats faster and stops
-	if p_push.signal_raise {
-		p_push.smooth_raise = true;
-	}
-
-	// stop any raise, even smooth call
-	if p_push.any_clears || p_push.any_top_blocks {
-		p_push.smooth_raise = false; // deletes all smooth_raise signals
-		return;
-	}
-
-	// if anything blocks raise by setting its time all raise stops until it counts down
-	// used to block the amount of time it takes until another raise triggers
-	if p_push.raised_blocked_counter > 0 {
-		p_push.raised_blocked_counter -= 1; 
-		p_push.smooth_raise = false; // deletes all smooth_raise signals 
-		return;
-	}
-
-	// until counter is at 16 (the block sprite size)
-	if p_push.offset_counter > 16.0 {
-		// reset all offsets and reset smoothing
-		p_push.offset_counter = 0.0; 
-		set_visual_offsets(0.0, stack, blocks, cursor);
-		p_push.smooth_raise = false;
-		p_push.raised_blocked_counter = 5; // TODO: GET TIME FROM FILE
-	}
-	else {
-		// if smooth - increase faster
-		if p_push.smooth_raise {
-			p_push.offset_counter += 4.0;
-		}
-		// else slowly increase
-		else {
-			p_push.offset_counter += 0.025; // TODO: TIMES LEVEL DEPENDANT
-		}
-
-		set_visual_offsets(p_push.offset_counter, stack, blocks, cursor);
-	}
-}	
-
-fn set_visual_offsets(
-	value: f32, 
-	stack: &Stack,
-	blocks: &mut WriteStorage<'_, Block>,
-	cursor: &mut Cursor,
-	) {
-	for i in 0..BLOCKS {
-		blocks.get_mut(stack.from_i(i)).unwrap().offset.1 = value;
-	}
-
-	cursor.offset.1 = value;
 }
 
 // checks through eachs block right, right_right and up, up_up to see if they are performing a combo

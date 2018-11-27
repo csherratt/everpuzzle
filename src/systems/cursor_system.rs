@@ -10,6 +10,7 @@ use components::{
     cursor::Cursor,
     kind_generator::KindGenerator,
     playfield::stack::Stack,
+    playfield::playfield_push::PlayfieldPush,
 };
 use block_states::swap::SWAP_TIME;
 use block_states::block_state::change_state;
@@ -32,7 +33,6 @@ impl CursorSystem {
         key_presses.insert(String::from("left"), 0);
         key_presses.insert(String::from("swap"), 0);
         key_presses.insert(String::from("space"), 0);
-        key_presses.insert(String::from("raise"), 0);
 
         CursorSystem {
             key_presses
@@ -85,6 +85,7 @@ impl<'a> System<'a> for CursorSystem {
         Write<'a, KindGenerator>,
         WriteStorage<'a, Block>,
         ReadStorage<'a, Stack>,
+        WriteStorage<'a, PlayfieldPush>,
     );
 
     fn run(&mut self, (
@@ -95,6 +96,7 @@ impl<'a> System<'a> for CursorSystem {
             mut kind_gen,
             mut blocks,
             stacks,
+            mut playfield_pushes,
             ): Self::SystemData) 
     {
         if self.hold(&mut input, "up") {
@@ -150,12 +152,10 @@ impl<'a> System<'a> for CursorSystem {
             }
         }
 
-        if self.press(&mut input, "raise") {
-            for cursor in cursors.join() {
-                for stack in (&stacks).join() {
-                     
-                }
-            }
+        // TODO: DONT SET THIS FOR EVERY PLAYFIELD, look for cursor specific input, then decide
+        // which playfield.signal_raise should be set true / false
+        for playfield_push in (&mut playfield_pushes).join() {
+            playfield_push.signal_raise = input.action_is_down("raise").unwrap();
         }
 
         for (sprite, transform, cursor) in (&mut sprites, &mut transforms, &mut cursors).join() {

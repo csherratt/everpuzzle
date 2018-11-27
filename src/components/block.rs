@@ -12,10 +12,12 @@ pub struct Block {
     pub y: i32,
     pub offset: (f32, f32),
     pub move_dir: f32,
+
+    // fsm
     pub state: &'static str,
     pub counter: u32,
 
-    // clear variables
+    // clear
     pub chainable: bool,
     pub clearing: bool,
     pub clear_counter: i32,
@@ -23,7 +25,7 @@ pub struct Block {
     pub clear_time: i32,
     pub clear_start_counter: i32,
 
-    // anim counters
+    // animiation
     pub anim_counter: u32,
     pub anim_offset: u32,
 }
@@ -128,15 +130,41 @@ impl Block {
     // THIS SHOULD BE CHANGED WHENEVER DATA SHOULD PERSIST AFTER A FALL OR A SWAP!!!
     pub fn set_properties(&mut self, other: Block) {
         self.kind = other.kind;
+        self.offset = other.offset;
+
+        // fsm
         self.state = other.state;
+        self.counter = other.counter;
+
+        // clear 
         self.chainable = other.chainable;
+        self.clear_start_counter = other.clear_start_counter;
+
+        // animation
+        self.anim_counter = other.anim_counter;
+        self.anim_offset = other.anim_offset;
     }
 
     // reset distinct values 
     pub fn reset(&mut self) {
         self.kind = -1; 
+        self.offset = (0.0, 0.0);
+
+        // fsm
         self.state = "IDLE";
+        self.counter = 0;
+
+        // clear
         self.chainable = false;
+        self.clearing = false;
+        self.clear_counter = 0;
+        self.clear_anim_counter = 0;
+        self.clear_time = 0;
+        self.clear_start_counter = 0;
+
+        // animation
+        self.anim_counter = 0;
+        self.anim_offset = 0;
     }
 }
 
