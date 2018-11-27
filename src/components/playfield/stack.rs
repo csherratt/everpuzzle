@@ -16,11 +16,6 @@ impl Stack {
         }
     }
 
-    // shouldnt be used too often, rather use i2xy to get the iterator calculated once
-    pub fn from_xy(&self, x: usize, y: usize) -> Entity {
-        self.block_entities[Stack::xy2i(x, y)]
-    }
-
     // convert an x and y coordinate to i
     // use this if you want to back convert from an x and y
     // this is most often used when only one parameter changes and the other one stays
