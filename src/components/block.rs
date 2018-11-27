@@ -1,13 +1,13 @@
 #![allow(dead_code, unused_imports)]
 use amethyst::ecs::prelude::{Component, DenseVecStorage};
-use std::marker::Copy;
-use std::clone::Clone;
 use block_states::land::LAND_TIME;
+use std::clone::Clone;
+use std::marker::Copy;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Block {
     pub kind: i32, // sprite_number or -1 meaning invisible
-    pub id: u32, 
+    pub id: u32,
     pub x: i32,
     pub y: i32,
     pub offset: (f32, f32),
@@ -41,7 +41,7 @@ impl Default for Block {
             move_dir: 1.0,
             state: "IDLE",
             counter: 0,
-            
+
             // clear variables
             chainable: false,
             clearing: false,
@@ -59,26 +59,32 @@ impl Default for Block {
 
 impl Block {
     pub fn new(id: u32, kind: i32, x: i32, y: i32) -> Block {
-        Block { id, kind, x, y, ..Default::default() }
+        Block {
+            id,
+            kind,
+            x,
+            y,
+            ..Default::default()
+        }
     }
 
     // a block is empty when its kind is -1 so it turns invisible and
-    // its state is always idle 
+    // its state is always idle
     pub fn is_empty(&self) -> bool {
         self.kind == -1 && self.state == "IDLE"
     }
 
-    // a block is swappable when: 
+    // a block is swappable when:
     // its state isnt idle or its invisible,
     // other block isnt empty and currently in fall,
-    // its state is land and its counter still below land time 
-    // valid blocks are currently swapping 
+    // its state is land and its counter still below land time
+    // valid blocks are currently swapping
     pub fn is_swappable(&self, other: &Block, above_block: Option<&Block>) -> bool {
         if let Some(above) = above_block {
             if above.state == "HANG" {
                 return true;
             }
-        } 
+        }
 
         if !other.is_empty() && self.state == "FALL" {
             return true;
@@ -98,11 +104,11 @@ impl Block {
 
         return false;
     }
-    
+
     // a block is comboable when its:
     // y isnt at the bottom of the blocks - darkened column,
     // kind isnt invisible and its state is idle
-    // currently landing 
+    // currently landing
     pub fn is_comboable(&self) -> bool {
         if self.y == 0 {
             return false;
@@ -136,7 +142,7 @@ impl Block {
         self.state = other.state;
         self.counter = other.counter;
 
-        // clear 
+        // clear
         self.chainable = other.chainable;
         self.clear_start_counter = other.clear_start_counter;
 
@@ -145,9 +151,9 @@ impl Block {
         self.anim_offset = other.anim_offset;
     }
 
-    // reset distinct values 
+    // reset distinct values
     pub fn reset(&mut self) {
-        self.kind = -1; 
+        self.kind = -1;
         self.offset = (0.0, 0.0);
 
         // fsm

@@ -1,9 +1,6 @@
 #![allow(unused_variables)]
+use data::block_data::{BLOCKS, COLS};
 use rand::prelude::*;
-use data::block_data::{
-    COLS, 
-    BLOCKS,
-};
 
 // resource that stores the rng generator that will be global
 // accessed via the world
@@ -16,7 +13,7 @@ impl Default for KindGenerator {
     // default so it can be fetched by systems
     fn default() -> KindGenerator {
         KindGenerator {
-            rng: SmallRng::from_seed([0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+            rng: SmallRng::from_seed([0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         }
     }
 }
@@ -35,7 +32,7 @@ impl KindGenerator {
         let mut nums: Vec<i32> = Vec::new();
         nums.resize(size, -1);
 
-        // scoped previous number that saves the newest generated number 
+        // scoped previous number that saves the newest generated number
         let mut prev_before = -1;
 
         for i in 0..size {
@@ -59,21 +56,25 @@ impl KindGenerator {
                 if i != 0 {
                     // if the right wall is hit (after i * 6) then be true
                     if i % COLS + 1 != 0 {
-                        new_num = self.get_number_in_zone(prev_before, bot_num, i, safe_zone, nulling_zone);
-                    }
-                    else {
+                        new_num = self.get_number_in_zone(
+                            prev_before,
+                            bot_num,
+                            i,
+                            safe_zone,
+                            nulling_zone,
+                        );
+                    } else {
                         new_num = self.get_number_in_zone(-1, bot_num, i, safe_zone, nulling_zone);
                     }
-                }
-                else {
+                } else {
                     new_num = self.get_number_in_zone(-1, -1, i, safe_zone, nulling_zone);
                 }
             }
 
-            prev_before = new_num; 
+            prev_before = new_num;
             nums[i] = new_num;
         }
-        
+
         nums
     }
 
@@ -82,11 +83,11 @@ impl KindGenerator {
     // numbers
     pub fn create_rows(&mut self, dimensions: (usize, usize)) -> Vec<i32> {
         // empty array to destined length
-        let size: usize = dimensions.0 * dimensions.1; 
+        let size: usize = dimensions.0 * dimensions.1;
         let mut nums: Vec<i32> = Vec::new();
         nums.resize(size, -1);
 
-        // scoped previous number that saves the newest generated number 
+        // scoped previous number that saves the newest generated number
         let mut prev_before = -1;
 
         for i in 0..size {
@@ -101,15 +102,14 @@ impl KindGenerator {
             // if the right wall is hit (after i * 6) then be true
             if i % COLS + 1 != 0 {
                 new_num = self.get_number(prev_before, bot_num);
-            }
-            else {
+            } else {
                 new_num = self.get_number(-1, bot_num);
             }
 
-            prev_before = new_num; 
+            prev_before = new_num;
             nums[i] = new_num;
         }
-        
+
         nums
     }
 
@@ -118,16 +118,16 @@ impl KindGenerator {
     // otherwhise theyll remain available to the chosen randomly
     fn get_number_in_zone(
         &mut self,
-        cond1: i32, 
-        cond2: i32, 
-        iterator: usize, 
-        safe_zone: usize, 
-        null_zone: usize
+        cond1: i32,
+        cond2: i32,
+        iterator: usize,
+        safe_zone: usize,
+        null_zone: usize,
     ) -> i32 {
         let mut numbers: Vec<i32> = vec![-1, 0, 1, 2, 3, 4];
-        
+
         if iterator >= null_zone {
-            return -1; 
+            return -1;
         }
 
         if safe_zone >= iterator {
@@ -148,13 +148,9 @@ impl KindGenerator {
     // returns a randomly chosen number out of an array
     // you can erase contents inside by specifying them in the parameters
     // otherwhise theyll remain available to the chosen randomly
-    fn get_number(
-        &mut self,
-        cond1: i32, 
-        cond2: i32, 
-    ) -> i32 {
+    fn get_number(&mut self, cond1: i32, cond2: i32) -> i32 {
         let mut numbers: Vec<i32> = vec![0, 1, 2, 3, 4];
-       
+
         if cond1 != -1 {
             numbers.retain(|x| x != &cond1);
         }
