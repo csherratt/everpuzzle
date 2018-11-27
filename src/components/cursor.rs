@@ -27,8 +27,8 @@ impl Cursor {
     }
 
     pub fn set_position(&self, transform: &mut Transform) {
-        transform.translation.x = self.x * 32.0 * transform.scale.x + self.offset.0;
-        transform.translation.y = self.y * 32.0 * transform.scale.y + self.offset.1;
+        transform.translation.x = (self.x * 32.0 + self.offset.0) * transform.scale.x;
+        transform.translation.y = (self.y * 32.0 + self.offset.1) * transform.scale.y;
     }
 }
 

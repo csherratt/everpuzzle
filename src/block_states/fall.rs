@@ -32,12 +32,8 @@ impl BlockState for Fall {
         }
 
         if is_empty {
-            let mut temp_block = Block::default();
-
             // store data from the current to a temp
-            temp_block = blocks.get(stack.from_i(i))
-                .unwrap()
-                .clone();
+            let temp_block = *blocks.get(stack.from_i(i)).unwrap();
 
             // store data into the down block
             blocks.get_mut(stack.from_i(i - COLS))

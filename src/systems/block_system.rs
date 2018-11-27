@@ -49,7 +49,7 @@ impl<'a> System<'a> for BlockSystem {
                     if b.counter > 0 {
                         b.counter -= 1;
                     }
-                } 
+                }
 
                 // match all on the blocks state - run all execute functions
                 match blocks.get(stack.from_i(i)).unwrap().state {
@@ -76,8 +76,8 @@ impl<'a> System<'a> for BlockSystem {
 
             // translation
             for (b, transform) in (&blocks, &mut transforms).join() {
-                transform.translation.x = b.x as f32 * transform.scale.x * 16.0 + b.offset.0;
-                transform.translation.y = b.y as f32 * transform.scale.y * 16.0 + b.offset.1;
+                transform.translation.x = (b.x as f32 * 16.0 + b.offset.0) * transform.scale.x;
+                transform.translation.y = (b.y as f32 * 16.0 + b.offset.1) * transform.scale.y;
             }
 
             // rendering
