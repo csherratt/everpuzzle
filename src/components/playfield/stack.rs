@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use std::ops::Index;
 use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use data::block_data::COLS;
 
@@ -38,11 +39,23 @@ impl Stack {
     // use this instead of calling from_xy multiple times
     // converts an iterator i back to x and y
     pub fn i2xy(i: usize) -> (usize, usize) {
-        (
-            i % COLS,
-            ((i / COLS) as f64).floor() as usize, // f32 floor changes to f64,
-                                                  // so why not go to f64 instantly
-        )
+        (i % COLS, i / COLS)
+    }
+}
+
+impl Index<usize> for Stack {
+    type Output = Entity;
+
+    fn index(&self, i: usize) -> &Entity {
+        &self.block_entities[i]
+    }
+}
+
+impl Index<(usize, usize)> for Stack {
+    type Output = Entity;
+
+    fn index(&self, (x, y): (usize, usize)) -> &Entity {
+        &self.block_entities[Stack::xy2i(x, y)]
     }
 }
 
