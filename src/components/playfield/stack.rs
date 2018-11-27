@@ -16,11 +16,6 @@ impl Stack {
         }
     }
 
-    // simple way to get an entity back
-    pub fn from_i(&self, i: usize) -> Entity {
-        self.block_entities[i]
-    }
-
     // shouldnt be used too often, rather use i2xy to get the iterator calculated once
     pub fn from_xy(&self, x: usize, y: usize) -> Entity {
         self.block_entities[Stack::xy2i(x, y)]

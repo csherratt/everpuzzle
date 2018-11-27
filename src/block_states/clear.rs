@@ -28,7 +28,7 @@ impl BlockState for Clear {
 
     // just the animation part of the whole clearing
     fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
 
         // clear at the end of the animation
         let test = b.clear_time as i32 - b.clear_counter as i32;
@@ -57,13 +57,13 @@ impl BlockState for Clear {
     // set this block to idle, also set chainable on all above that are real!
     fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
         set_chainables(i, &stack, blocks);
-        change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "IDLE");
+        change_state(blocks.get_mut(stack[i]).unwrap(), "IDLE");
     }
 }
 
 fn set_chainables(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
-    let x = blocks.get(stack.from_i(i)).unwrap().x as usize;
-    let y = blocks.get(stack.from_i(i)).unwrap().y as usize;
+    let x = blocks.get(stack[i]).unwrap().x as usize;
+    let y = blocks.get(stack[i]).unwrap().y as usize;
 
     for i in y..ROWS {
         let above = blocks.get_mut(stack.from_xy(x, i)).unwrap();

@@ -117,17 +117,17 @@ fn push_blocks(
         // since for i doesnt work backwards we do this
         let reverse = BLOCKS - i - 1;
 
-        let down: Block = *blocks.get(stack.from_i(reverse - COLS)).unwrap();
+        let down: Block = *blocks.get(stack[reverse - COLS]).unwrap();
 
         blocks
-            .get_mut(stack.from_i(reverse))
+            .get_mut(stack[reverse])
             .unwrap()
             .set_properties(down);
     }
 
     let new_row = generator.create_rows((6, 1));
     for i in 0..COLS {
-        blocks.get_mut(stack.from_i(i)).unwrap().kind = new_row[i];
+        blocks.get_mut(stack[i]).unwrap().kind = new_row[i];
     }
 
     if cursor.y < ROWS as f32 {
@@ -142,7 +142,7 @@ fn set_visual_offsets(
     cursor: &mut Cursor,
 ) {
     for i in 0..BLOCKS {
-        blocks.get_mut(stack.from_i(i)).unwrap().offset.1 = value;
+        blocks.get_mut(stack[i]).unwrap().offset.1 = value;
     }
 
     cursor.offset.1 = value;
@@ -151,7 +151,7 @@ fn set_visual_offsets(
 // returns true when any block was found that is currently in clear state
 fn check_blocks_clearing(stack: &Stack, blocks: &WriteStorage<'_, Block>) -> bool {
     for i in 0..BLOCKS {
-        let b = blocks.get(stack.from_i(i)).unwrap();
+        let b = blocks.get(stack[i]).unwrap();
 
         if b.state == "CLEAR" {
             // or garbage clear

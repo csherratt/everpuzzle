@@ -62,7 +62,7 @@ impl<'a> System<'a> for ClearSystem {
                 // set all animation times and general time it will take all blocks that are
                 // comboing to finish their animation
                 for id in &p_clear.clear_queue {
-                    let b = blocks.get_mut(stack.from_i(*id as usize)).unwrap();
+                    let b = blocks.get_mut(stack[*id as usize]).unwrap();
                     let set_time = flash + face + pop * p_clear.combo_counter;
                     b.clear_time = set_time as i32;
                     p_clear.combo_counter += 1;
@@ -149,7 +149,7 @@ fn any_chainable_exists(
     blocks: &WriteStorage<'_, Block>,
 ) -> bool {
     for id in clear_ids {
-        if blocks.get(stack.from_i(*id as usize)).unwrap().chainable {
+        if blocks.get(stack[*id as usize]).unwrap().chainable {
             return true;
         }
     }
