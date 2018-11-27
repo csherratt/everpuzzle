@@ -165,7 +165,7 @@ fn check_blocks_clearing(stack: &Stack, blocks: &WriteStorage<'_, Block>) -> boo
 // returns true if any "real" block is at the top of the grid
 fn check_blocks_at_top(stack: &Stack, blocks: &WriteStorage<'_, Block>) -> bool {
     for x in 0..COLS {
-        let b = blocks.get(stack.from_xy(x, ROWS - 1)).unwrap();
+        let b = blocks.get(stack[(x, ROWS - 1)]).unwrap();
 
         if b.kind != -1 && b.state == "IDLE" {
             // or garbage

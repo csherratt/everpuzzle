@@ -115,11 +115,11 @@ fn check_similar_block(
     stack: &Stack,
     blocks: &WriteStorage<'_, Block>,
 ) -> Option<Vec<u32>> {
-    let b1 = blocks.get(stack.from_xy(x, y)).unwrap();
+    let b1 = blocks.get(stack[(x, y)]).unwrap();
 
     let check_boundary = |x: usize, y: usize| -> Option<&Block> {
         if x < COLS && y < ROWS {
-            blocks.get(stack.from_xy(x, y))
+            blocks.get(stack[(x, y)])
         } else {
             None
         }

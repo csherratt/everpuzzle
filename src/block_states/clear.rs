@@ -66,7 +66,7 @@ fn set_chainables(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>)
     let y = blocks.get(stack[i]).unwrap().y as usize;
 
     for i in y..ROWS {
-        let above = blocks.get_mut(stack.from_xy(x, i)).unwrap();
+        let above = blocks.get_mut(stack[(x, i)]).unwrap();
 
         // look for non invisible blocks
         if above.kind != -1 {
