@@ -20,34 +20,34 @@ impl BlockState for Fall {
 
         // if in boundary for down blocks to exist
         if i > COLS {
-            let down = blocks.get_mut(stack.from_i(i - COLS)).unwrap();
+            let down = blocks.get_mut(stack[i - COLS]).unwrap();
             is_empty = down.is_empty();
             state_hang = down.state == "HANG";
             down_counter = down.counter;
         } else {
-            let b = blocks.get_mut(stack.from_i(i)).unwrap();
+            let b = blocks.get_mut(stack[i]).unwrap();
             b.state = "IDLE";
             return;
         }
 
         if is_empty {
             // store data from the current to a temp
-            let temp_block = *blocks.get(stack.from_i(i)).unwrap();
+            let temp_block = *blocks.get(stack[i]).unwrap();
 
             // store data into the down block
             blocks
-                .get_mut(stack.from_i(i - COLS))
+                .get_mut(stack[i - COLS])
                 .unwrap()
                 .set_properties(temp_block);
 
             // reset data in the current one to default
-            blocks.get_mut(stack.from_i(i)).unwrap().reset();
+            blocks.get_mut(stack[i]).unwrap().reset();
         } else if state_hang {
-            let b = blocks.get_mut(stack.from_i(i)).unwrap();
+            let b = blocks.get_mut(stack[i]).unwrap();
             b.state = "HANG";
             b.counter = down_counter;
         } else {
-            change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "LAND");
+            change_state(blocks.get_mut(stack[i]).unwrap(), "LAND");
         }
     }
 

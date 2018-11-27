@@ -16,7 +16,7 @@ impl BlockState for Idle {
         let can_hang: bool = { check_for_hang(i, stack, blocks) };
 
         // change the block to state if it isnt empty and the block below is empty / or falling
-        let b = blocks.get_mut(stack.from_i(i)).unwrap();
+        let b = blocks.get_mut(stack[i]).unwrap();
         if can_hang {
             change_state(b, "HANG");
         } else {

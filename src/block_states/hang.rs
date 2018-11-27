@@ -14,6 +14,6 @@ impl BlockState for Hang {
     fn execute(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {}
 
     fn counter_end(i: usize, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
-        change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "FALL");
+        change_state(blocks.get_mut(stack[i]).unwrap(), "FALL");
     }
 }

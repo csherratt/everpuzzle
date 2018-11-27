@@ -127,7 +127,7 @@ impl<'a> System<'a> for CursorSystem {
 
             for stack in (&stacks).join() {
                 for i in 0..BLOCKS {
-                    blocks.get_mut(stack.from_i(i)).unwrap().kind = kinds[i];
+                    blocks.get_mut(stack[i]).unwrap().kind = kinds[i];
                 }
             }
         }
@@ -166,15 +166,15 @@ fn swap(x: f32, y: f32, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
 
     let mut can_swap: bool = false;
     {
-        let b1 = blocks.get(stack.from_i(i)).unwrap();
-        let b2 = blocks.get(stack.from_i(i + 1)).unwrap();
+        let b1 = blocks.get(stack[i]).unwrap();
+        let b2 = blocks.get(stack[i + 1]).unwrap();
 
         let mut b1_above_block: Option<&Block> = None;
         let mut b2_above_block: Option<&Block> = None;
 
         if i < BLOCKS - COLS {
-            b1_above_block = blocks.get(stack.from_i(i + COLS));
-            b2_above_block = blocks.get(stack.from_i(i + 1 + COLS));
+            b1_above_block = blocks.get(stack[i + COLS]);
+            b2_above_block = blocks.get(stack[i + 1 + COLS]);
         }
 
         if b1.is_swappable(b2, b1_above_block) && b2.is_swappable(b1, b2_above_block) {
@@ -188,29 +188,29 @@ fn swap(x: f32, y: f32, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
 
     if can_swap {
         // set variables
-        set_swap_variables(blocks.get_mut(stack.from_i(i)).unwrap(), 1.0);
-        set_swap_variables(blocks.get_mut(stack.from_i(i + 1)).unwrap(), -1.0);
+        set_swap_variables(blocks.get_mut(stack[i]).unwrap(), 1.0);
+        set_swap_variables(blocks.get_mut(stack[i + 1]).unwrap(), -1.0);
 
         // set default stack blocks
         let mut left_block = Block::default();
         let mut right_block = Block::default();
 
         // store data from the left to a temp
-        left_block = blocks.get(stack.from_i(i)).unwrap().clone();
+        left_block = blocks.get(stack[i]).unwrap().clone();
 
         // store data from the right to a temp
-        right_block = blocks.get(stack.from_i(i + 1)).unwrap().clone();
+        right_block = blocks.get(stack[i + 1]).unwrap().clone();
 
         {
             blocks
-                .get_mut(stack.from_i(i + 1))
+                .get_mut(stack[i + 1])
                 .unwrap()
                 .set_properties(left_block);
         }
 
         {
             blocks
-                .get_mut(stack.from_i(i))
+                .get_mut(stack[i])
                 .unwrap()
                 .set_properties(right_block);
         }
