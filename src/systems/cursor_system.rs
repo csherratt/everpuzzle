@@ -1,25 +1,17 @@
-use amethyst::{
-    ecs::*,
-    core::Transform,
-    renderer::*,
-    input::*
-};
+use amethyst::{core::Transform, ecs::*, input::*, renderer::*};
 
-use components::{
-    block::Block,
-    cursor::Cursor,
-    kind_generator::KindGenerator,
-    playfield::stack::Stack,
-    playfield::playfield_push::PlayfieldPush,
-};
-use block_states::swap::SWAP_TIME;
 use block_states::block_state::change_state;
+use block_states::swap::SWAP_TIME;
+use components::{
+    block::Block, cursor::Cursor, kind_generator::KindGenerator,
+    playfield::playfield_push::PlayfieldPush, playfield::stack::Stack,
+};
 use data::block_data::*;
 
 use std::collections::HashMap;
 
 pub struct CursorSystem {
-    key_presses: HashMap<String, i32>
+    key_presses: HashMap<String, i32>,
 }
 
 // everything the player controls should happen here
@@ -34,9 +26,7 @@ impl CursorSystem {
         key_presses.insert(String::from("swap"), 0);
         key_presses.insert(String::from("space"), 0);
 
-        CursorSystem {
-            key_presses
-        }
+        CursorSystem { key_presses }
     }
 
     // looks wether an action is held down, good for controller support later
@@ -44,7 +34,7 @@ impl CursorSystem {
         if input.action_is_down(name).unwrap() {
             let result = *self.key_presses.get(name).unwrap();
 
-            // special, detects at frame 0 and later on returns true all the 
+            // special, detects at frame 0 and later on returns true all the
             // time like in the real game
             if result == 0 || result > 16 {
                 *self.key_presses.get_mut(name).unwrap() += 1;
@@ -52,8 +42,7 @@ impl CursorSystem {
             }
 
             *self.key_presses.get_mut(name).unwrap() += 1;
-        }
-        else {
+        } else {
             *self.key_presses.get_mut(name).unwrap() = 0;
         }
 
@@ -67,8 +56,7 @@ impl CursorSystem {
                 *self.key_presses.get_mut(name).unwrap() = 1;
                 return true;
             }
-        }
-        else {
+        } else {
             *self.key_presses.get_mut(name).unwrap() = 0;
         }
 
@@ -88,17 +76,19 @@ impl<'a> System<'a> for CursorSystem {
         WriteStorage<'a, PlayfieldPush>,
     );
 
-    fn run(&mut self, (
-            mut sprites, 
+    fn run(
+        &mut self,
+        (
+            mut sprites,
             mut transforms,
-            mut cursors, 
+            mut cursors,
             mut input,
             mut kind_gen,
             mut blocks,
             stacks,
             mut playfield_pushes,
-            ): Self::SystemData) 
-    {
+        ): Self::SystemData,
+    ) {
         if self.hold(&mut input, "up") {
             for cursor in (&mut cursors).join() {
                 if cursor.y < (ROWS - 1) as f32 {
@@ -134,7 +124,7 @@ impl<'a> System<'a> for CursorSystem {
         // reset all block colors to a random value
         if self.press(&mut input, "space") {
             let kinds = kind_gen.create_stack(5, 8);
-            
+
             for stack in (&stacks).join() {
                 for i in 0..BLOCKS {
                     blocks.get_mut(stack.from_i(i)).unwrap().kind = kinds[i];
@@ -164,18 +154,14 @@ impl<'a> System<'a> for CursorSystem {
             sprite.sprite_number = cursor.anim_offset as usize;
             if cursor.anim_offset < 7.0 {
                 cursor.anim_offset += 1.0 / 4.0;
-            }
-            else {
+            } else {
                 cursor.anim_offset = 0.0;
             }
         }
     }
 }
 
-fn swap(
-    x: f32, y: f32, 
-    stack: &Stack, 
-    blocks: &mut WriteStorage<'_, Block>) {
+fn swap(x: f32, y: f32, stack: &Stack, blocks: &mut WriteStorage<'_, Block>) {
     let i = Stack::xy2i(x as usize, y as usize);
 
     let mut can_swap: bool = false;
@@ -210,31 +196,29 @@ fn swap(
         let mut right_block = Block::default();
 
         // store data from the left to a temp
-        left_block = blocks.get(stack.from_i(i))
-            .unwrap()
-            .clone();
+        left_block = blocks.get(stack.from_i(i)).unwrap().clone();
 
         // store data from the right to a temp
-        right_block = blocks.get(stack.from_i(i + 1))
-            .unwrap()
-            .clone();
+        right_block = blocks.get(stack.from_i(i + 1)).unwrap().clone();
 
         {
-            blocks.get_mut(stack.from_i(i + 1))
+            blocks
+                .get_mut(stack.from_i(i + 1))
                 .unwrap()
                 .set_properties(left_block);
         }
 
         {
-            blocks.get_mut(stack.from_i(i))
+            blocks
+                .get_mut(stack.from_i(i))
                 .unwrap()
                 .set_properties(right_block);
         }
-    } 
+    }
 }
 
 // swap variables that need to be set on a different direction
-fn set_swap_variables (b: &mut Block, dir: f32) {
+fn set_swap_variables(b: &mut Block, dir: f32) {
     b.offset.0 = 16.0 * dir;
     b.counter = SWAP_TIME as u32;
     b.move_dir = dir;

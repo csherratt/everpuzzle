@@ -1,8 +1,8 @@
 #![allow(unused_variables)]
 use amethyst::ecs::prelude::WriteStorage;
+use block_states::block_state::{change_state, BlockState};
 use components::block::Block;
 use components::playfield::stack::Stack;
-use block_states::block_state::{BlockState, change_state};
 use data::block_data::COLS;
 
 // falls to one block below IN 1 FRAME
@@ -24,8 +24,7 @@ impl BlockState for Fall {
             is_empty = down.is_empty();
             state_hang = down.state == "HANG";
             down_counter = down.counter;
-        }
-        else {
+        } else {
             let b = blocks.get_mut(stack.from_i(i)).unwrap();
             b.state = "IDLE";
             return;
@@ -36,21 +35,18 @@ impl BlockState for Fall {
             let temp_block = *blocks.get(stack.from_i(i)).unwrap();
 
             // store data into the down block
-            blocks.get_mut(stack.from_i(i - COLS))
+            blocks
+                .get_mut(stack.from_i(i - COLS))
                 .unwrap()
                 .set_properties(temp_block);
 
             // reset data in the current one to default
-            blocks.get_mut(stack.from_i(i))
-                .unwrap()
-                .reset();
-        }
-        else if state_hang {
+            blocks.get_mut(stack.from_i(i)).unwrap().reset();
+        } else if state_hang {
             let b = blocks.get_mut(stack.from_i(i)).unwrap();
             b.state = "HANG";
             b.counter = down_counter;
-        }
-        else {
+        } else {
             change_state(blocks.get_mut(stack.from_i(i)).unwrap(), "LAND");
         }
     }

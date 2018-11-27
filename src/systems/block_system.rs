@@ -1,23 +1,11 @@
-use amethyst::{
-    ecs::*,
-    renderer::*,
-    core::Transform,
-};
+use amethyst::{core::Transform, ecs::*, renderer::*};
 
-use components::{
-    block::Block,
-    playfield::stack::Stack,
-};
-use data::block_data::{COLS, BLOCKS};
 use block_states::{
-    block_state::BlockState,
-    idle::Idle,
-    hang::Hang,
-    fall::Fall,
-    land::Land,
-    clear::Clear,
+    block_state::BlockState, clear::Clear, fall::Fall, hang::Hang, idle::Idle, land::Land,
     swap::Swap,
 };
+use components::{block::Block, playfield::stack::Stack};
+use data::block_data::{BLOCKS, COLS};
 
 // handles everything a block should do itself or based on others
 pub struct BlockSystem;
@@ -30,14 +18,10 @@ impl<'a> System<'a> for BlockSystem {
         WriteStorage<'a, Hidden>,
     );
 
-    fn run(&mut self, (
-            stacks,
-            mut sprites, 
-            mut transforms, 
-            mut blocks,
-            mut hiddens,
-            ): Self::SystemData)
-    {
+    fn run(
+        &mut self,
+        (stacks, mut sprites, mut transforms, mut blocks, mut hiddens): Self::SystemData,
+    ) {
         // run through all existing block stacks
         for stack in (&stacks).join() {
             // run through all states from a block
@@ -45,7 +29,7 @@ impl<'a> System<'a> for BlockSystem {
                 // decrease the counter if its over 0
                 {
                     let mut b = blocks.get_mut(stack.from_i(i)).unwrap();
-                    
+
                     if b.counter > 0 {
                         b.counter -= 1;
                     }
@@ -58,7 +42,7 @@ impl<'a> System<'a> for BlockSystem {
                     "LAND" => Land::execute(i, &stack, &mut blocks),
                     "CLEAR" => Clear::execute(i, &stack, &mut blocks),
                     "SWAP" => Swap::execute(i, &stack, &mut blocks),
-                    _ => ()
+                    _ => (),
                 }
 
                 // if the counter is at 0, call current states counter end function
@@ -69,8 +53,8 @@ impl<'a> System<'a> for BlockSystem {
                         "LAND" => Land::counter_end(i, &stack, &mut blocks),
                         "CLEAR" => Clear::counter_end(i, &stack, &mut blocks),
                         "SWAP" => Swap::counter_end(i, &stack, &mut blocks),
-                        _ => ()
-                    }    
+                        _ => (),
+                    }
                 }
             }
 
@@ -81,24 +65,20 @@ impl<'a> System<'a> for BlockSystem {
             }
 
             // rendering
-            update_sprites(
-                &stack, 
-                &mut blocks,
-                &mut sprites,
-                &mut hiddens,
-            );
+            update_sprites(&stack, &mut blocks, &mut sprites, &mut hiddens);
         }
     }
 }
 
 // visibility is on when the blocks kind isnt -1
-// also sets the frame of the sprite by its kind * 9 and an additional 
+// also sets the frame of the sprite by its kind * 9 and an additional
 // animation offset used to stay at specific horizontal sprites
 fn update_sprites(
-    stack: &Stack, 
+    stack: &Stack,
     blocks: &mut WriteStorage<'_, Block>,
     sprites: &mut WriteStorage<'_, SpriteRender>,
-    hiddens: &mut WriteStorage<'_, Hidden>) {
+    hiddens: &mut WriteStorage<'_, Hidden>,
+) {
     for i in 0..BLOCKS {
         let b = blocks.get_mut(stack.from_i(i)).unwrap();
 
@@ -117,11 +97,13 @@ fn update_sprites(
                 b.anim_offset = 1;
             }
 
-            sprites.get_mut(stack.from_i(i)).unwrap().sprite_number = b.kind as usize * 8 + b.anim_offset as usize;
-        }
-        else {
+            sprites.get_mut(stack.from_i(i)).unwrap().sprite_number =
+                b.kind as usize * 8 + b.anim_offset as usize;
+        } else {
             if !hiddens.contains(stack.from_i(i)) {
-                hiddens.insert(stack.from_i(i), Hidden::default()).expect("add hide component");
+                hiddens
+                    .insert(stack.from_i(i), Hidden::default())
+                    .expect("add hide component");
             }
         }
     }

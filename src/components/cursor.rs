@@ -5,7 +5,7 @@ use amethyst::{
 
 pub struct Cursor {
     pub x: f32,
-    pub y: f32, 
+    pub y: f32,
     pub anim_offset: f32,
     pub offset: (f32, f32),
 }
@@ -13,7 +13,7 @@ pub struct Cursor {
 impl Default for Cursor {
     fn default() -> Cursor {
         Cursor {
-            x: 0.0, 
+            x: 0.0,
             y: 0.0,
             anim_offset: 0.0,
             offset: (0.0, 0.0),
@@ -23,7 +23,11 @@ impl Default for Cursor {
 
 impl Cursor {
     pub fn new(x: f32, y: f32) -> Cursor {
-        Cursor { x, y, ..Default::default() }
+        Cursor {
+            x,
+            y,
+            ..Default::default()
+        }
     }
 
     pub fn set_position(&self, transform: &mut Transform) {

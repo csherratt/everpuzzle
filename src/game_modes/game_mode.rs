@@ -1,40 +1,31 @@
 use amethyst::{
+    core::{cgmath::Vector3, GlobalTransform, Transform},
+    ecs::prelude::Entity,
     prelude::*,
     renderer::*,
-    core::{Transform, GlobalTransform, cgmath::Vector3},
     utils::fps_counter::FPSCounter,
-    ecs::prelude::Entity,
 };
 use rand::prelude::*;
 
 use components::{
     block::Block,
-    playfield::stack::Stack,
     cursor::Cursor,
-    spritesheet_loader::{
-        SpriteSheetLoader,
-        load_sprite_sheet
-    },
     kind_generator::KindGenerator,
-    playfield::{
-        playfield_clear::PlayfieldClear,
-        playfield_push::PlayfieldPush,
-    },
+    playfield::stack::Stack,
+    playfield::{playfield_clear::PlayfieldClear, playfield_push::PlayfieldPush},
+    spritesheet_loader::{load_sprite_sheet, SpriteSheetLoader},
 };
 
 use data::block_data::BLOCKS;
 
 pub struct GameMode {
     rng_seed: [u8; 16],
-    config: DisplayConfig
+    config: DisplayConfig,
 }
 
 impl GameMode {
     pub fn new(rng_seed: [u8; 16], config: DisplayConfig) -> GameMode {
-        GameMode {
-            rng_seed,
-            config
-        }
+        GameMode { rng_seed, config }
     }
 
     // creates all entities with block components attached, spritesheet data with sprite_number
@@ -57,12 +48,15 @@ impl GameMode {
                 flip_vertical: false,
             };
 
-            block_entities.push(world.create_entity()
-                .with(sprite_render_block)
-                .with(b)
-                .with(GlobalTransform::default())
-                .with(trans)
-                .build());
+            block_entities.push(
+                world
+                    .create_entity()
+                    .with(sprite_render_block)
+                    .with(b)
+                    .with(GlobalTransform::default())
+                    .with(trans)
+                    .build(),
+            );
         }
 
         block_entities
@@ -74,14 +68,14 @@ impl GameMode {
         let mut transform = Transform::default();
         transform.translation.z = 1.0;
 
-        world.create_entity()
+        world
+            .create_entity()
             .with(Camera::from(Projection::orthographic(
                 0.0,
                 self.config.dimensions.unwrap().0 as f32,
                 self.config.dimensions.unwrap().1 as f32,
-                0.0
-            )))
-            .with(transform)
+                0.0,
+            ))).with(transform)
             .build();
     }
 }
@@ -91,8 +85,8 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         let world = data.world;
 
         // create random generator for random seeded numbers
-        let mut kind_gen: KindGenerator = KindGenerator { 
-            rng: SmallRng::from_seed(self.rng_seed) 
+        let mut kind_gen: KindGenerator = KindGenerator {
+            rng: SmallRng::from_seed(self.rng_seed),
         };
         let kinds = kind_gen.create_stack(5, 8);
 
@@ -102,11 +96,7 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
 
         // load the cursor sprite and attach its data component
         let sprite_sheet = SpriteRender {
-            sprite_sheet: load_sprite_sheet(
-                world,
-                "cursor.png",
-                "cursor_spritesheet.ron"
-            ),
+            sprite_sheet: load_sprite_sheet(world, "cursor.png", "cursor_spritesheet.ron"),
             sprite_number: 0,
             flip_horizontal: false,
             flip_vertical: false,
@@ -121,7 +111,8 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
 
         // generate a cursor entity
         world.register::<Cursor>();
-        let cursor_entity = world.create_entity()
+        let cursor_entity = world
+            .create_entity()
             .with(sprite_sheet)
             .with(Transparent::default())
             .with(cursor)
@@ -136,7 +127,8 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         world.register::<Stack>();
         world.register::<PlayfieldClear>();
         world.register::<PlayfieldPush>();
-        world.create_entity()
+        world
+            .create_entity()
             .with(PlayfieldClear::default())
             .with(PlayfieldPush::default())
             .with(Stack::new(block_entities, cursor_entity))
@@ -145,4 +137,3 @@ impl<'a, 'b> SimpleState<'a, 'b> for GameMode {
         self.initialise_camera(world);
     }
 }
-

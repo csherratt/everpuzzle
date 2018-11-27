@@ -1,11 +1,7 @@
 use amethyst::ecs::prelude::WriteStorage;
+use block_states::{clear::Clear, hang::Hang, land::Land};
 use components::block::Block;
 use components::playfield::stack::Stack;
-use block_states::{
-    hang::Hang,
-    land::Land,
-    clear::Clear,
-};
 
 // A trait that all Block states should expand on
 pub trait BlockState {
@@ -36,9 +32,9 @@ pub fn change_state(b: &mut Block, new_state: &'static str) {
     match b.state {
         "LAND" => Land::exit(b),
         "CLEAR" => Clear::exit(b),
-        _ => ()
-    }  
-        
+        _ => (),
+    }
+
     b.state = new_state;
 
     // call the currents state enter function
@@ -46,6 +42,6 @@ pub fn change_state(b: &mut Block, new_state: &'static str) {
         "HANG" => Hang::enter(b),
         "LAND" => Land::enter(b),
         "CLEAR" => Clear::enter(b),
-        _ => ()
+        _ => (),
     }
 }
